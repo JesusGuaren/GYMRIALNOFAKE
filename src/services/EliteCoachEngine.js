@@ -1,5 +1,5 @@
 import { getMuscleRecoveryStates } from './CoachingService';
-import { calculate1RM, getRankByWeight } from '../lib/rankingSystem';
+import { calculate1RM, getBestRankEver } from '../lib/rankingSystem';
 import { 
   normalizeMuscleGroup, 
   translateMuscleGroup, 
@@ -321,20 +321,7 @@ const resolveIntent = (intent, normalizedText, entities, workouts, routines, pro
       const xp = calculateUserXP(workouts);
       const levelInfo = getLvl(xp);
 
-      let bestRankRatio = -1;
-      let rank = getRankByWeight(0, 'Arms'); 
-      workouts.forEach(w => {
-        w.workout_entries?.forEach(e => {
-          const mg = e.exercises?.muscle_group || 'Arms';
-          const exName = e.exercises?.name || '';
-          const rm = calculate1RM(e.weight, e.reps);
-          const r = getRankByWeight(rm, mg, exName);
-          if (r.minRatio > bestRankRatio) {
-            bestRankRatio = r.minRatio;
-            rank = r;
-          }
-        });
-      });
+      const rank = getBestRankEver(workouts);
       return `Nivel actual: ${levelInfo.level} (${Math.round(levelInfo.progress * 100)}% al sig.). Rango de fuerza: ${rank.name}.`;
     }
 
@@ -344,8 +331,8 @@ const resolveIntent = (intent, normalizedText, entities, workouts, routines, pro
         const weight = parseFloat(numbers[0]);
         const reps = parseInt(numbers[1]);
         if (weight > 0 && reps > 0) {
-          const rm = Math.round(weight * (1 + reps / 30));
-          return `Tu 1RM estimado es ${rm}kg (Epley: ${weight}kg x${reps}).`;
+          const rm = calculate1RM(weight, reps);
+          return `Tu 1RM estimado es ${rm}kg (basado en ${weight}kg x${reps}).`;
         }
       }
       return "Calculadora de 1RM: dime peso y reps. Ej: 'calcula 1rm 80kg 6 reps'.";

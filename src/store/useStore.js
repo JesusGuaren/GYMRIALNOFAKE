@@ -3,7 +3,17 @@ import { persist, createJSONStorage } from 'zustand/middleware'
 import AsyncStorage from '@react-native-async-storage/async-storage'
 import { supabase } from '../lib/supabase'
 
-export const THEMES = {
+// Calcula si el texto sobre un color de acento debe ser blanco o negro
+// para mantenerse legible (luminancia relativa, fórmula WCAG).
+const getContrastText = (hex) => {
+  const c = hex.replace('#', '');
+  const [r, g, b] = [0, 2, 4].map(i => parseInt(c.substring(i, i + 2), 16) / 255);
+  const [rl, gl, bl] = [r, g, b].map(v => (v <= 0.03928 ? v / 12.92 : Math.pow((v + 0.055) / 1.055, 2.4)));
+  const luminance = 0.2126 * rl + 0.7152 * gl + 0.0722 * bl;
+  return luminance > 0.45 ? '#020617' : '#ffffff';
+};
+
+const THEMES_RAW = {
   midnight: { bg: '#020617', card: '#0b0f19', accent: '#6366f1', border: '#1f293d' },
   oled: { bg: '#000000', card: '#0a0a0a', accent: '#f8fafc', border: '#1c1c1e' },
   ocean: { bg: '#010409', card: '#0d1117', accent: '#38bdf8', border: '#21262d' },
@@ -13,6 +23,11 @@ export const THEMES = {
   rose: { bg: '#0c0205', card: '#16080e', accent: '#f43f5e', border: '#2c121e' },
   cyberpunk: { bg: '#0a010d', card: '#14051a', accent: '#d946ef', border: '#2d0e3a' }
 };
+
+// accentText = color de texto/ícono legible cuando el fondo es colors.accent.
+export const THEMES = Object.fromEntries(
+  Object.entries(THEMES_RAW).map(([key, t]) => [key, { ...t, accentText: getContrastText(t.accent) }])
+);
 
 const useStore = create(
   persist(
@@ -232,6 +247,19 @@ const useStore = create(
     await get().fetchRoutines();
     await get().setActiveProgram(program.id);
     alert("¡Programa '" + name + "' guardado y activado con éxito!");
+  },
+
+  renameProgram: async (programId, name, description) => {
+    const { error } = await supabase
+      .from('training_programs')
+      .update({ name, description })
+      .eq('id', programId);
+
+    if (error) {
+      console.error("Error renaming program:", error);
+      throw error;
+    }
+    await get().fetchPrograms();
   },
 
   setActiveProgram: async (programId) => {

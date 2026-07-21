@@ -57,22 +57,18 @@ const calculateTotalMuscleVolume = (workouts, targetMuscle) => {
   return total;
 };
 
-const checkMaxRMExact = (workouts, validExerciseNames, requiredMuscleGroup) => {
+const checkMaxRMExact = (workouts, validExerciseNames, requiredMuscleGroup, excludeKeywords = []) => {
   let maxRM = 0;
   workouts.forEach(w => {
     w.workout_entries?.forEach(e => {
       const name = e.exercises?.name?.toLowerCase() || '';
       const rawMuscle = e.exercises?.muscle_group;
-      
+
       const isCorrectMuscle = requiredMuscleGroup === 'ANY' || (rawMuscle && normalizeMuscleGroup(rawMuscle) === requiredMuscleGroup);
       const isCorrectExercise = validExerciseNames.some(val => name.includes(val.toLowerCase()));
-      
-      if (isCorrectMuscle && isCorrectExercise) {
-        // Excepciones estrictas para evitar cruces (Ej: tríceps close grip)
-        if (requiredMuscleGroup === 'Chest' && (name.includes('close') || name.includes('tricep') || name.includes('cerrado'))) {
-          return;
-        }
+      const isExcludedVariant = excludeKeywords.some(kw => name.includes(kw));
 
+      if (isCorrectMuscle && isCorrectExercise && !isExcludedVariant) {
         const rm = calculate1RM(e.weight, e.reps);
         if (rm > maxRM) maxRM = rm;
       }
@@ -132,7 +128,8 @@ const generateAchievements = () => {
   streaks.forEach((d, i) => {
     all.push({
       id: `streak_${d}`, name: streakTitles[i], description: `Entrena ${d} días seguidos sin fallar.`,
-      icon: '🔥', xpReward: streakXp[i], requirement: (w) => calculateStreak(w) >= d
+      icon: '🔥', xpReward: streakXp[i], target: d, unit: 'días', getCurrent: calculateStreak,
+      requirement: (w) => calculateStreak(w) >= d
     });
   });
 
@@ -143,7 +140,8 @@ const generateAchievements = () => {
   totalW.forEach((t, i) => {
     all.push({
       id: `total_w_${t}`, name: totalTitles[i], description: `Completa ${t} entrenamientos en total.`,
-      icon: '🏆', xpReward: totalXp[i], requirement: (w) => w.length >= t
+      icon: '🏆', xpReward: totalXp[i], target: t, unit: 'entrenamientos', getCurrent: (w) => w.length,
+      requirement: (w) => w.length >= t
     });
   });
 
@@ -154,7 +152,8 @@ const generateAchievements = () => {
   vols.forEach((v, i) => {
     all.push({
       id: `life_vol_${v}`, name: volTitles[i], description: `Mueve un total acumulado de ${v.toLocaleString('en-US')} kg en tu vida.`,
-      icon: '🌋', xpReward: volXp[i], requirement: (w) => getTotalVolume(w) >= v
+      icon: '🌋', xpReward: volXp[i], target: v, unit: 'kg', getCurrent: getTotalVolume,
+      requirement: (w) => getTotalVolume(w) >= v
     });
   });
 
@@ -162,10 +161,12 @@ const generateAchievements = () => {
   const singleVols = [1000, 5000, 10000, 20000, 50000];
   const singleVolTitles = ['Carga Ligera', 'Hércules Moderno', 'Volumen Colosal', 'Carga Bestial', 'Titan del Gimnasio'];
   const singleVolXp = [100, 250, 500, 1000, 2500];
+  const getMaxSingleWorkoutVolume = (w) => w.reduce((max, workout) => Math.max(max, calculateWorkoutVolume(workout)), 0);
   singleVols.forEach((v, i) => {
     all.push({
       id: `single_vol_${v}`, name: singleVolTitles[i], description: `Mueve más de ${v.toLocaleString('en-US')} kg en una sola sesión.`,
-      icon: '🏋️', xpReward: singleVolXp[i], requirement: (w) => w.some(workout => calculateWorkoutVolume(workout) >= v)
+      icon: '🏋️', xpReward: singleVolXp[i], target: v, unit: 'kg (sesión)', getCurrent: getMaxSingleWorkoutVolume,
+      requirement: (w) => getMaxSingleWorkoutVolume(w) >= v
     });
   });
 
@@ -173,32 +174,35 @@ const generateAchievements = () => {
   const muscles = ['Chest', 'Back', 'Legs', 'Shoulders', 'Arms', 'Core'];
   const muscleEmojis = {'Chest':'🛡️', 'Back':'🦅', 'Legs':'🦵', 'Shoulders':'🏔️', 'Arms':'💪', 'Core':'🍫'};
   const muscleTiers = [1000, 5000, 10000, 25000, 50000, 100000, 250000, 500000, 1000000, 2000000];
-  
+
   muscles.forEach(m => {
     const spanishName = translateMuscleGroup(m);
     muscleTiers.forEach((vol, lvl) => {
       all.push({
         id: `mastery_${m}_lvl${lvl+1}`, name: `Maestría de ${spanishName} Nivel ${lvl+1}`,
         description: `Acumula ${vol.toLocaleString('en-US')} kg movidos en ejercicios de ${spanishName}.`,
-        icon: muscleEmojis[m], xpReward: 100 + (lvl * 150), requirement: (w) => calculateTotalMuscleVolume(w, m) >= vol
+        icon: muscleEmojis[m], xpReward: 100 + (lvl * 150), target: vol, unit: 'kg', getCurrent: (w) => calculateTotalMuscleVolume(w, m),
+        requirement: (w) => calculateTotalMuscleVolume(w, m) >= vol
       });
     });
   });
 
   // 5. 1RM MILESTONES (Strict Validation)
   const lifts = [
-    { id: 'bench', name: 'Bench Press', muscle: 'Chest', validNames: ['bench press', 'press de banca', 'chest press'], targets: [60, 80, 100, 120, 140, 160], icon: '👑', xpScale: 200 },
-    { id: 'squat', name: 'Sentadilla', muscle: 'Legs', validNames: ['squat', 'sentadilla'], targets: [80, 100, 140, 180, 220, 260], icon: '🦵', xpScale: 200 },
-    { id: 'deadlift', name: 'Peso Muerto', muscle: 'Back', validNames: ['deadlift', 'peso muerto'], targets: [100, 140, 180, 220, 260, 300], icon: '🦍', xpScale: 250 },
-    { id: 'ohp', name: 'Press Militar', muscle: 'Shoulders', validNames: ['overhead press', 'press militar', 'military press'], targets: [40, 60, 80, 100, 120], icon: '🏔️', xpScale: 250 },
+    { id: 'bench', name: 'Bench Press', muscle: 'Chest', validNames: ['bench press', 'press de banca', 'chest press'], excludeKeywords: ['close', 'tricep', 'cerrado', 'incline', 'decline', 'inclinado', 'declinado'], targets: [60, 80, 100, 120, 140, 160], icon: '👑', xpScale: 200 },
+    { id: 'squat', name: 'Sentadilla', muscle: 'Legs', validNames: ['squat', 'sentadilla'], excludeKeywords: ['split', 'bulgar'], targets: [80, 100, 140, 180, 220, 260], icon: '🦵', xpScale: 200 },
+    { id: 'deadlift', name: 'Peso Muerto', muscle: 'Back', validNames: ['deadlift', 'peso muerto'], excludeKeywords: ['romanian', 'rumano', 'stiff', 'sumo'], targets: [100, 140, 180, 220, 260, 300], icon: '🦍', xpScale: 250 },
+    { id: 'ohp', name: 'Press Militar', muscle: 'Shoulders', validNames: ['overhead press', 'press militar', 'military press'], excludeKeywords: ['dumbbell', 'mancuerna', 'arnold'], targets: [40, 60, 80, 100, 120], icon: '🏔️', xpScale: 250 },
   ];
 
   lifts.forEach(lift => {
+    const getCurrentRM = (w) => checkMaxRMExact(w, lift.validNames, lift.muscle, lift.excludeKeywords);
     lift.targets.forEach((kg, lvl) => {
       all.push({
         id: `1rm_${lift.id}_${kg}`, name: `Rey del ${lift.name} ${kg}kg`,
         description: `Alcanza un 1RM estimado de ${kg}kg en ${lift.name}.`,
-        icon: lift.icon, xpReward: lift.xpScale * (lvl + 1), requirement: (w) => checkMaxRMExact(w, lift.validNames, lift.muscle) >= kg
+        icon: lift.icon, xpReward: lift.xpScale * (lvl + 1), target: kg, unit: 'kg (1RM)', getCurrent: getCurrentRM,
+        requirement: (w) => getCurrentRM(w) >= kg
       });
     });
   });

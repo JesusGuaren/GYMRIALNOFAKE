@@ -1,8 +1,7 @@
-import { normalizeMuscleGroup } from '../constants/Muscles';
 import { supabase } from '../lib/supabase';
 import { calculateStreak, calculateUserXP, getLevelInfo } from './AchievementService';
 import { getMuscleRecoveryStates } from './CoachingService';
-import { getRankByWeight, calculate1RM } from '../lib/rankingSystem';
+import { getBestRankEver } from '../lib/rankingSystem';
 import { calculateBMR, calculateTDEE, getAdjustedCalories, calculateMacros } from './NutritionService';
 import { processEngineMessage } from './EliteCoachEngine';
 
@@ -42,21 +41,7 @@ const buildUserContext = (stateContext = {}) => {
   const levelInfo = getLevelInfo(xp);
 
   // 2. Determinar el mejor Rango de Fuerza (PR)
-  let bestRankRatio = -1;
-  let rankName = 'Principiante';
-  workouts.forEach(w => {
-    w.workout_entries?.forEach(e => {
-      const rawMg = e.exercises?.muscle_group || 'Arms';
-      const mg = normalizeMuscleGroup(rawMg);
-      const exName = e.exercises?.name || '';
-      const rm = calculate1RM(e.weight, e.reps);
-      const r = getRankByWeight(rm, mg, exName);
-      if (r.minRatio > bestRankRatio) {
-        bestRankRatio = r.minRatio;
-        rankName = r.name;
-      }
-    });
-  });
+  const rankName = getBestRankEver(workouts).name;
 
   // 3. Fisiología y Tiempos de Recuperación
   const recoveryStates = getMuscleRecoveryStates(workouts);
