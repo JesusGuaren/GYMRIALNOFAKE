@@ -95,6 +95,21 @@ const useStore = create(
     if (!error && data) set({ exercises: data });
   },
 
+  createCustomExercise: async (name, muscleGroup) => {
+    const user = get().user;
+    if (!user) throw new Error('No authenticated user');
+
+    const { data, error } = await supabase
+      .from('exercises')
+      .insert([{ user_id: user.id, name, muscle_group: muscleGroup }])
+      .select()
+      .single();
+
+    if (error) throw error;
+    await get().fetchExercises();
+    return data;
+  },
+
   fetchWorkouts: async () => {
     const user = get().user;
     if (!user) return;

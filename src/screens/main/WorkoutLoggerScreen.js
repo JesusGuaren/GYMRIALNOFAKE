@@ -11,6 +11,7 @@ import { isBarbellExercise } from '../../services/PlateCalculatorService';
 import PlateCalculatorModal from '../../components/PlateCalculatorModal';
 import { normalizeMuscleGroup, translateMuscleGroup, SUB_TO_PRIMARY_MAPPING } from '../../constants/Muscles';
 import ContextualTooltip from '../../components/common/ContextualTooltip';
+import CreateExerciseModal from '../../components/common/CreateExerciseModal';
 
 const MUSCLE_IMAGES = {
   'Chest': require('../../../assets/chest_bg.png'),
@@ -30,6 +31,7 @@ export default function WorkoutLoggerScreen({ navigation, route }) {
   const [date] = useState(new Date().toISOString().split('T')[0]);
   const [exercises, setExercises] = useState([]);
   const [showSelector, setShowSelector] = useState(false);
+  const [showCreateExercise, setShowCreateExercise] = useState(false);
   const [showAddActions, setShowAddActions] = useState(false);
   const [showHelpModal, setShowHelpModal] = useState(null);
   const [isSaving, setIsSaving] = useState(false);
@@ -540,10 +542,18 @@ export default function WorkoutLoggerScreen({ navigation, route }) {
              <Text className="text-white text-2xl font-black">Añadir</Text>
              <TouchableOpacity onPress={() => setShowSelector(false)} className="p-2 rounded-full" style={{ backgroundColor: colors.card }}><X size={24} color="#64748b" /></TouchableOpacity>
            </View>
-           <View className="px-5 py-4">
+           <View className="px-5 py-4 gap-y-3">
              <View className="rounded-2xl px-4 flex-row items-center border" style={{ backgroundColor: colors.card, borderColor: colors.border }}>
                <TextInput value={searchTerm} onChangeText={setSearchTerm} placeholder="Buscar..." placeholderTextColor="#64748b" className="flex-1 h-12 text-white font-bold" />
              </View>
+             <TouchableOpacity
+               onPress={() => setShowCreateExercise(true)}
+               className="rounded-2xl px-4 h-12 flex-row items-center justify-center gap-x-2 border border-dashed"
+               style={{ borderColor: colors.accent + '4D', backgroundColor: colors.accent + '0D' }}
+             >
+               <Plus size={16} color={colors.accent} strokeWidth={2.5} />
+               <Text style={{ color: colors.accent }} className="font-bold text-xs uppercase tracking-wider">Crear Ejercicio Nuevo</Text>
+             </TouchableOpacity>
            </View>
            <ScrollView className="flex-1 px-5">
              <View className="flex-row flex-wrap justify-between">
@@ -552,7 +562,14 @@ export default function WorkoutLoggerScreen({ navigation, route }) {
                    <Image source={MUSCLE_IMAGES[ex.muscle_group] || { uri: 'https://images.unsplash.com/photo-1534438327276-14e5300c3a48?q=80&w=200&auto=format&fit=crop' }} className="absolute inset-0 w-full h-full opacity-30" resizeMode="cover" />
                    <View className="absolute inset-0" style={{ backgroundColor: colors.bg + '33' }} />
                    <View className="p-4 justify-between h-full">
-                     <View className="self-start px-2 py-0.5 rounded-md" style={{ backgroundColor: colors.accent }}><Text style={{ color: colors.accentText }} className="text-[8px] font-black uppercase">{ex.muscle_group}</Text></View>
+                     <View className="flex-row justify-between items-start">
+                       <View className="px-2 py-0.5 rounded-md" style={{ backgroundColor: colors.accent }}><Text style={{ color: colors.accentText }} className="text-[8px] font-black uppercase">{ex.muscle_group}</Text></View>
+                       {!!ex.user_id && (
+                         <View className="px-2 py-0.5 rounded-md bg-purple-500/80">
+                           <Text className="text-white text-[8px] font-black uppercase">Tuyo</Text>
+                         </View>
+                       )}
+                     </View>
                      <Text className="text-white font-bold text-xs" numberOfLines={2}>{ex.name}</Text>
                    </View>
                  </TouchableOpacity>
@@ -561,6 +578,16 @@ export default function WorkoutLoggerScreen({ navigation, route }) {
            </ScrollView>
         </View>
       </Modal>
+
+      <CreateExerciseModal
+        visible={showCreateExercise}
+        onClose={() => setShowCreateExercise(false)}
+        initialName={searchTerm}
+        onCreated={(newEx) => {
+          handleSelectExercise(newEx);
+          setSearchTerm('');
+        }}
+      />
 
       <PlateCalculatorModal
         visible={showPlateCalc}

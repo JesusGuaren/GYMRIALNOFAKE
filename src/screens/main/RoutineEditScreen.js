@@ -5,6 +5,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import useStore, { THEMES } from '../../store/useStore';
 import * as Haptics from 'expo-haptics';
 import { translateMuscleGroup, normalizeMuscleGroup } from '../../constants/Muscles';
+import CreateExerciseModal from '../../components/common/CreateExerciseModal';
 
 const MUSCLE_IMAGES = {
   'Chest': require('../../../assets/chest_bg.png'),
@@ -27,6 +28,7 @@ export default function RoutineEditScreen({ navigation, route }) {
   const [description, setDescription] = useState('');
   const [exercises, setExercises] = useState([]);
   const [showSelector, setShowSelector] = useState(false);
+  const [showCreateExercise, setShowCreateExercise] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
   const [hasChanges, setHasChanges] = useState(false);
 
@@ -389,7 +391,7 @@ export default function RoutineEditScreen({ navigation, route }) {
               <X size={24} color="#64748b" />
             </TouchableOpacity>
           </View>
-          <View className="px-5 py-4">
+          <View className="px-5 py-4 gap-y-3">
             <View className="rounded-2xl px-4 flex-row items-center border" style={{ backgroundColor: colors.card, borderColor: colors.border }}>
               <TextInput
                 value={searchTerm}
@@ -399,6 +401,14 @@ export default function RoutineEditScreen({ navigation, route }) {
                 className="flex-1 h-12 text-white font-bold"
               />
             </View>
+            <TouchableOpacity
+              onPress={() => setShowCreateExercise(true)}
+              className="rounded-2xl px-4 h-12 flex-row items-center justify-center gap-x-2 border border-dashed"
+              style={{ borderColor: colors.accent + '4D', backgroundColor: colors.accent + '0D' }}
+            >
+              <Plus size={16} color={colors.accent} strokeWidth={2.5} />
+              <Text style={{ color: colors.accent }} className="font-bold text-xs uppercase tracking-wider">Crear Ejercicio Nuevo</Text>
+            </TouchableOpacity>
           </View>
           <ScrollView className="flex-1 px-5">
             <View className="flex-row flex-wrap justify-between">
@@ -416,8 +426,15 @@ export default function RoutineEditScreen({ navigation, route }) {
                   />
                   <View className="absolute inset-0" style={{ backgroundColor: colors.bg + '33' }} />
                   <View className="p-4 justify-between h-full">
-                    <View className="self-start px-2 py-0.5 rounded-md" style={{ backgroundColor: colors.accent }}>
-                      <Text style={{ color: colors.accentText }} className="text-[8px] font-black uppercase">{ex.muscle_group}</Text>
+                    <View className="flex-row justify-between items-start">
+                      <View className="px-2 py-0.5 rounded-md" style={{ backgroundColor: colors.accent }}>
+                        <Text style={{ color: colors.accentText }} className="text-[8px] font-black uppercase">{ex.muscle_group}</Text>
+                      </View>
+                      {!!ex.user_id && (
+                        <View className="px-2 py-0.5 rounded-md bg-purple-500/80">
+                          <Text className="text-white text-[8px] font-black uppercase">Tuyo</Text>
+                        </View>
+                      )}
                     </View>
                     <Text className="text-white font-bold text-xs" numberOfLines={2}>{ex.name}</Text>
                   </View>
@@ -427,6 +444,16 @@ export default function RoutineEditScreen({ navigation, route }) {
           </ScrollView>
         </View>
       </Modal>
+
+      <CreateExerciseModal
+        visible={showCreateExercise}
+        onClose={() => setShowCreateExercise(false)}
+        initialName={searchTerm}
+        onCreated={(newEx) => {
+          handleSelectExercise(newEx);
+          setSearchTerm('');
+        }}
+      />
     </View>
   );
 }
