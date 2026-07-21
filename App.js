@@ -174,6 +174,7 @@ export default function App() {
       useStore.getState().fetchRoutines();
       useStore.getState().fetchUserProfile();
       useStore.getState().fetchPrograms();
+      useStore.getState().fetchBodyMetrics();
 
       // Restaurar cronómetro si estaba activo
       const timerEndTime = useStore.getState().timerEndTime;

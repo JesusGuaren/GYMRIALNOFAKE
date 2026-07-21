@@ -39,6 +39,7 @@ const useStore = create(
       workouts: [],
       routines: [],
       programs: [],
+      bodyMetrics: [],
       coachChatMessages: [],
       
       // Active Workout & Global Timer State
@@ -93,6 +94,48 @@ const useStore = create(
       .select('*')
       .order('name');
     if (!error && data) set({ exercises: data });
+  },
+
+  fetchBodyMetrics: async () => {
+    const user = get().user;
+    if (!user) return;
+
+    const { data, error } = await supabase
+      .from('body_metrics')
+      .select('*')
+      .eq('user_id', user.id)
+      .order('date', { ascending: true });
+
+    if (!error && data) set({ bodyMetrics: data });
+  },
+
+  // Upsert manual: una sola entrada por día (si ya registraste peso hoy, lo actualiza en vez de duplicar).
+  logBodyMetric: async (date, weight, bodyFat = null, notes = null) => {
+    const user = get().user;
+    if (!user) throw new Error('No authenticated user');
+
+    const existing = get().bodyMetrics.find(m => m.date === date);
+
+    if (existing) {
+      const { error } = await supabase
+        .from('body_metrics')
+        .update({ weight, body_fat: bodyFat, notes })
+        .eq('id', existing.id);
+      if (error) throw error;
+    } else {
+      const { error } = await supabase
+        .from('body_metrics')
+        .insert([{ user_id: user.id, date, weight, body_fat: bodyFat, notes }]);
+      if (error) throw error;
+    }
+
+    await get().fetchBodyMetrics();
+  },
+
+  deleteBodyMetric: async (id) => {
+    const { error } = await supabase.from('body_metrics').delete().eq('id', id);
+    if (error) throw error;
+    await get().fetchBodyMetrics();
   },
 
   createCustomExercise: async (name, muscleGroup) => {

@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { View, Text, TouchableOpacity, ScrollView, TextInput, Alert, Platform } from 'react-native';
-import { User, Save, Target, Activity, Check, Palette, Calendar, Zap, HelpCircle, ChevronLeft, Info, Download, Upload, FileSpreadsheet, ChevronRight } from 'lucide-react-native';
+import { User, Save, Target, Activity, Check, Palette, Calendar, Zap, HelpCircle, ChevronLeft, Info, Download, Upload, FileSpreadsheet, ChevronRight, TrendingUp } from 'lucide-react-native';
 import useStore, { THEMES } from '../../store/useStore';
 import { calculateBMR, calculateTDEE, getAdjustedCalories, calculateMacros } from '../../services/NutritionService';
 import Animated, { FadeIn } from 'react-native-reanimated';
@@ -20,6 +20,7 @@ export default function ProfileScreen({ navigation }) {
   const user = useStore(state => state.user);
   const userProfile = useStore(state => state.userProfile);
   const updateUserProfile = useStore(state => state.updateUserProfile);
+  const logBodyMetric = useStore(state => state.logBodyMetric);
   const globalTheme = useStore(state => state.theme);
   const setGlobalTheme = useStore(state => state.setTheme);
   const { workouts, routines, fetchWorkouts, fetchRoutines, fetchUserProfile } = useStore();
@@ -81,6 +82,13 @@ export default function ProfileScreen({ navigation }) {
         goal,
         experience_level: level
       });
+
+      // Alimenta el historial de peso corporal con el valor actual, sin bloquear
+      // el guardado del perfil si esto llegara a fallar.
+      if (weight) {
+        const todayStr = new Date().toISOString().split('T')[0];
+        logBodyMetric(todayStr, parseFloat(weight)).catch(() => {});
+      }
     } catch (error) {
       Alert.alert('Error', error.message);
     } finally {
@@ -321,7 +329,7 @@ export default function ProfileScreen({ navigation }) {
                 </View>
                 <View className="flex-1">
                   <Text className="text-slate-500 text-[10px] uppercase font-inter-semibold tracking-wider mb-2">Altura (cm)</Text>
-                  <PreciseInput 
+                  <PreciseInput
                     value={height}
                     onChangeText={setHeight}
                     keyboardType="numeric"
@@ -329,6 +337,15 @@ export default function ProfileScreen({ navigation }) {
                   />
                 </View>
               </View>
+
+              <TouchableOpacity
+                onPress={() => navigation.navigate('BodyMetrics')}
+                className="flex-row items-center justify-center gap-x-2 py-3 rounded-xl border"
+                style={{ backgroundColor: colors.bg, borderColor: colors.border }}
+              >
+                <TrendingUp size={14} color={colors.accent} />
+                <Text style={{ color: colors.accent }} className="font-bold text-xs uppercase tracking-wider">Ver Historial de Peso</Text>
+              </TouchableOpacity>
 
               <View className="flex-row gap-x-4">
                 <View className="flex-1">
@@ -352,7 +369,7 @@ export default function ProfileScreen({ navigation }) {
                         borderWidth: gender === 'male' ? 0 : 1.5
                       }}
                     >
-                      <Text className={`font-inter-semibold text-xs tracking-wider ${gender === 'male' ? 'text-white' : 'text-slate-500'}`}>MASCULINO</Text>
+                      <Text className="font-inter-semibold text-xs tracking-wider" style={{ color: gender === 'male' ? colors.accentText : '#64748b' }}>MASCULINO</Text>
                     </TouchableOpacity>
                     <TouchableOpacity 
                       onPress={() => setGender('female')}
@@ -363,7 +380,7 @@ export default function ProfileScreen({ navigation }) {
                         borderWidth: gender === 'female' ? 0 : 1.5
                       }}
                     >
-                      <Text className={`font-inter-semibold text-xs tracking-wider ${gender === 'female' ? 'text-white' : 'text-slate-500'}`}>FEMENINO</Text>
+                      <Text className="font-inter-semibold text-xs tracking-wider" style={{ color: gender === 'female' ? colors.accentText : '#64748b' }}>FEMENINO</Text>
                     </TouchableOpacity>
                   </View>
                 </View>
@@ -389,7 +406,7 @@ export default function ProfileScreen({ navigation }) {
                         borderWidth: 1.5
                       }}
                     >
-                      <Text className={`text-[10px] font-inter-bold tracking-wider ${activityLevel === item.id ? 'text-white' : 'text-slate-500'}`}>{item.label.toUpperCase()}</Text>
+                      <Text className="text-[10px] font-inter-bold tracking-wider" style={{ color: activityLevel === item.id ? colors.accentText : '#64748b' }}>{item.label.toUpperCase()}</Text>
                     </TouchableOpacity>
                   ))}
                 </ScrollView>
@@ -446,7 +463,7 @@ export default function ProfileScreen({ navigation }) {
                         borderWidth: goal === g.id ? 0 : 1.5
                       }}
                     >
-                      <Text className={`text-[10px] font-inter-bold text-center ${goal === g.id ? 'text-white' : 'text-slate-500'}`}>
+                      <Text className="text-[10px] font-inter-bold text-center" style={{ color: goal === g.id ? colors.accentText : '#64748b' }}>
                         {g.label}
                       </Text>
                     </TouchableOpacity>
@@ -472,7 +489,7 @@ export default function ProfileScreen({ navigation }) {
                         borderWidth: level === lvl.id ? 0 : 1.5
                       }}
                     >
-                      <Text className={`text-[10px] font-inter-bold ${level === lvl.id ? 'text-white' : 'text-slate-500'}`}>
+                      <Text className="text-[10px] font-inter-bold" style={{ color: level === lvl.id ? colors.accentText : '#64748b' }}>
                         {lvl.label}
                       </Text>
                     </TouchableOpacity>
