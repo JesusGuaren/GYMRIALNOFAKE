@@ -145,15 +145,15 @@ export default function PlateCalculatorModal({ visible, onClose, totalWeight, ex
           {/* Header */}
           <View className="flex-row justify-between items-center mb-6">
             <View className="flex-row items-center gap-x-2">
-              <View className="w-8 h-8 rounded-lg bg-blue-500/10 items-center justify-center">
-                <Dumbbell color="#3b82f6" size={18} />
+              <View className="w-8 h-8 rounded-lg items-center justify-center" style={{ backgroundColor: `${colors.accent}1A` }}>
+                <Dumbbell color={colors.accent} size={18} />
               </View>
               <View>
                 <Text className="text-white font-extrabold text-base">Carga de Barra ⚖️</Text>
                 <Text className="text-slate-500 text-[10px] uppercase font-bold tracking-wider">{exerciseName}</Text>
               </View>
             </View>
-            <TouchableOpacity onPress={onClose} className="w-8 h-8 bg-slate-900 border border-slate-800 rounded-full items-center justify-center">
+            <TouchableOpacity onPress={onClose} className="w-8 h-8 rounded-full items-center justify-center border" style={{ backgroundColor: colors.card, borderColor: colors.border }}>
               <X color="#94a3b8" size={16} />
             </TouchableOpacity>
           </View>
@@ -183,9 +183,13 @@ export default function PlateCalculatorModal({ visible, onClose, totalWeight, ex
               <TouchableOpacity
                 key={item.weight}
                 onPress={() => setBarWeight(item.weight)}
-                className={`flex-1 py-3 rounded-xl border items-center justify-center ${barWeight === item.weight ? 'bg-blue-600 border-blue-500' : 'bg-slate-950 border-slate-900'}`}
+                className="flex-1 py-3 rounded-xl border items-center justify-center"
+                style={{
+                  backgroundColor: barWeight === item.weight ? colors.accent : colors.bg,
+                  borderColor: barWeight === item.weight ? colors.accent : colors.border
+                }}
               >
-                <Text className={`text-[10px] font-black ${barWeight === item.weight ? 'text-white' : 'text-slate-400'}`}>
+                <Text className="text-[10px] font-black" style={{ color: barWeight === item.weight ? colors.accentText : '#94a3b8' }}>
                   {item.name}
                 </Text>
               </TouchableOpacity>

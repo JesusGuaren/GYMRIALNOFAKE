@@ -408,7 +408,7 @@ export const InteractiveBodySection = React.memo(function InteractiveBodySection
               Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
               navigation.navigate('Coach');
             }}
-            className="flex-row items-center justify-center gap-x-2 mt-2 pt-3 border-t border-slate-800/40"
+            className="flex-row items-center justify-center gap-x-2 mt-2 pt-3 border-t"
             style={{ borderTopColor: `${colors.border}15` }}
           >
             <MessageSquare size={12} color={colors.accent} />

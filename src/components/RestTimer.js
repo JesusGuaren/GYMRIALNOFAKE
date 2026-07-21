@@ -1,12 +1,14 @@
 import React, { useEffect, useState } from 'react';
 import { View, Text, TouchableOpacity, Vibration, Platform } from 'react-native';
 import { Play, Pause, X, Clock } from 'lucide-react-native';
-import useStore from '../store/useStore';
+import useStore, { THEMES } from '../store/useStore';
 import Animated, { FadeIn, FadeOut, BounceIn } from 'react-native-reanimated';
 
 export default function GlobalRestTimer() {
   const globalTimerSeconds = useStore(state => state.globalTimerSeconds);
   const setGlobalTimer = useStore(state => state.setGlobalTimer);
+  const theme = useStore(state => state.theme);
+  const colors = THEMES[theme] || THEMES.midnight;
   const [isActive, setIsActive] = useState(true);
 
   // Sync with global store changes
@@ -48,8 +50,8 @@ export default function GlobalRestTimer() {
     <Animated.View 
       entering={FadeIn.duration(300)} 
       exiting={FadeOut.duration(200)}
-      className="absolute bottom-24 right-5 bg-slate-950 border border-emerald-500/50 rounded-3xl p-5 shadow-2xl shadow-emerald-500/20"
-      style={{ minWidth: 220, zIndex: 9999, elevation: 10 }}
+      className="absolute bottom-24 right-5 border rounded-3xl p-5 shadow-2xl shadow-emerald-500/20"
+      style={{ backgroundColor: colors.card, borderColor: '#10b98180', minWidth: 220, zIndex: 9999, elevation: 10 }}
     >
       <View className="flex-row justify-between items-center mb-3">
         <View className="flex-row items-center gap-x-2">
@@ -68,7 +70,8 @@ export default function GlobalRestTimer() {
       <View className="flex-row justify-center items-center gap-x-4">
         <TouchableOpacity 
           onPress={() => addTime(-15)}
-          className="bg-slate-900 border border-slate-800 rounded-xl px-3 py-2"
+          className="rounded-xl px-3 py-2 border"
+          style={{ backgroundColor: colors.card, borderColor: colors.border }}
         >
           <Text className="text-white text-xs font-bold">-15s</Text>
         </TouchableOpacity>
@@ -82,7 +85,8 @@ export default function GlobalRestTimer() {
 
         <TouchableOpacity 
           onPress={() => addTime(30)}
-          className="bg-slate-900 border border-slate-800 rounded-xl px-3 py-2"
+          className="rounded-xl px-3 py-2 border"
+          style={{ backgroundColor: colors.card, borderColor: colors.border }}
         >
           <Text className="text-white text-xs font-bold">+30s</Text>
         </TouchableOpacity>
