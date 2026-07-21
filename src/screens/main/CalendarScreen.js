@@ -141,6 +141,7 @@ export default function CalendarScreen() {
             exercise_id: entry.exercise_id,
             name: entry.exercises?.name || 'Ejercicio',
             muscle_group: entry.exercises?.muscle_group || 'Arms',
+            supersetId: entry.superset_id || null,
             sets: [],
           };
           order.push(entry.exercise_id);

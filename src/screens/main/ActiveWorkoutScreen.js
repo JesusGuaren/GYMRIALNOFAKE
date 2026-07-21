@@ -105,14 +105,26 @@ export default function ActiveWorkoutScreen({ navigation }) {
     setExercises(newExs);
 
     if (set.isCompleted) {
-      let baseTime = 90;
-      const normalizedMg = normalizeMuscleGroup(ex.muscle_group);
-      if (['Legs', 'Back', 'Chest'].includes(normalizedMg)) {
-        baseTime = 120;
+      // En una superserie no se descansa entre el ejercicio A y su pareja B:
+      // se salta el timer y se navega directo al siguiente ejercicio del bloque.
+      // El descanso completo solo se activa al cerrar la ronda (tras completar B).
+      const nextInSuperset = newExs[exIdx + 1];
+      const isFirstOfSuperset = !!ex.supersetId && nextInSuperset?.supersetId === ex.supersetId;
+
+      if (isFirstOfSuperset) {
+        Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+        setGlobalTimer(null);
+        setCurrentExerciseIdx(exIdx + 1);
       } else {
-        baseTime = 60;
+        let baseTime = 90;
+        const normalizedMg = normalizeMuscleGroup(ex.muscle_group);
+        if (['Legs', 'Back', 'Chest'].includes(normalizedMg)) {
+          baseTime = 120;
+        } else {
+          baseTime = 60;
+        }
+        setGlobalTimer(baseTime);
       }
-      setGlobalTimer(baseTime);
 
       // Feedback de Coaching
       const lastSession = workouts
@@ -137,6 +149,7 @@ export default function ActiveWorkoutScreen({ navigation }) {
       exercise_id: ex.id,
       name: ex.name,
       muscle_group: ex.muscle_group || 'Arms',
+      supersetId: null,
       sets: [{ weight: 0, reps: 0, rpe: 8, type: 'Normal', isCompleted: false }]
     };
     setExercises([...exercises, newEx]);
@@ -192,7 +205,8 @@ export default function ActiveWorkoutScreen({ navigation }) {
                     weight: s.weight,
                     reps: s.reps,
                     rpe: s.rpe,
-                    set_type: s.type
+                    set_type: s.type,
+                    superset_id: ex.supersetId || null
                   });
                 }
               });
@@ -281,18 +295,28 @@ export default function ActiveWorkoutScreen({ navigation }) {
       {/* Exercise Navigation */}
       <View className="border-b" style={{ borderColor: colors.border, backgroundColor: colors.bg }}>
         <ScrollView horizontal showsHorizontalScrollIndicator={false} className="px-5 py-3">
-          {exercises.map((ex, idx) => (
-            <TouchableOpacity
-              key={idx}
-              onPress={() => setCurrentExerciseIdx(idx)}
-              className="mr-2 px-4 py-2 rounded-xl"
-              style={{ backgroundColor: currentExerciseIdx === idx ? colors.accent : colors.card }}
-            >
-              <Text className="font-bold text-xs" style={{ color: currentExerciseIdx === idx ? colors.accentText : '#94a3b8' }}>
-                {ex.name}
-              </Text>
-            </TouchableOpacity>
-          ))}
+          {exercises.map((ex, idx) => {
+            const inSuperset = !!ex.supersetId && (
+              exercises[idx - 1]?.supersetId === ex.supersetId || exercises[idx + 1]?.supersetId === ex.supersetId
+            );
+            const isActive = currentExerciseIdx === idx;
+            return (
+              <TouchableOpacity
+                key={idx}
+                onPress={() => setCurrentExerciseIdx(idx)}
+                className="mr-2 px-4 py-2 rounded-xl flex-row items-center gap-x-1.5 border"
+                style={{
+                  backgroundColor: isActive ? colors.accent : colors.card,
+                  borderColor: inSuperset ? '#a855f7' : 'transparent'
+                }}
+              >
+                {inSuperset && <Zap size={11} color={isActive ? colors.accentText : '#a855f7'} />}
+                <Text className="font-bold text-xs" style={{ color: isActive ? colors.accentText : '#94a3b8' }}>
+                  {ex.name}
+                </Text>
+              </TouchableOpacity>
+            );
+          })}
           <TouchableOpacity
             onPress={() => setShowSelector(true)}
             className="p-2 rounded-xl border border-dashed"
@@ -328,6 +352,14 @@ export default function ActiveWorkoutScreen({ navigation }) {
                   </TouchableOpacity>
                 </View>
                 <Text className="text-slate-500 font-medium text-sm mt-1">{currentEx.muscle_group}</Text>
+                {!!currentEx.supersetId && (
+                  <View className="flex-row items-center gap-x-1.5 mt-2 self-start px-2 py-1 rounded-lg bg-purple-500/10">
+                    <Zap size={11} color="#a855f7" />
+                    <Text className="text-purple-400 text-[9px] font-black uppercase tracking-wider">
+                      Superserie · sin descanso hasta cerrar la ronda
+                    </Text>
+                  </View>
+                )}
               </View>
               {globalTimerSeconds !== null && (
                 <View className="bg-purple-600 px-4 py-2 rounded-2xl flex-row items-center gap-x-2 shadow-lg shadow-purple-600/30">

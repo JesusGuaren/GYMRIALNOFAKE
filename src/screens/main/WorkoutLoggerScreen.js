@@ -45,11 +45,12 @@ export default function WorkoutLoggerScreen({ navigation, route }) {
         exercise_id: re.exercise_id,
         name: re.exercises?.name || re.name || '',
         muscle_group: normalizeMuscleGroup(re.exercises?.muscle_group || re.muscle_group),
-        sets: Array.from({ length: re.default_sets || 3 }, () => ({ 
-          weight: 0, 
-          reps: re.default_reps || 10, 
-          rpe: 8, 
-          type: 'Normal' 
+        supersetId: re.superset_id || null,
+        sets: Array.from({ length: re.default_sets || 3 }, () => ({
+          weight: 0,
+          reps: re.default_reps || 10,
+          rpe: 8,
+          type: 'Normal'
         }))
       })) || [];
       setExercises(loaded);
@@ -140,7 +141,7 @@ export default function WorkoutLoggerScreen({ navigation, route }) {
     if (exercises.length === 0) return;
     setIsSaving(true);
     const flatEntries = exercises.flatMap(ex => ex.sets.map(s => ({
-      exercise_id: ex.exercise_id, weight: s.weight, reps: s.reps, rpe: s.rpe, set_type: s.type
+      exercise_id: ex.exercise_id, weight: s.weight, reps: s.reps, rpe: s.rpe, set_type: s.type, superset_id: ex.supersetId || null
     })));
 
     try {
@@ -231,9 +232,27 @@ export default function WorkoutLoggerScreen({ navigation, route }) {
               const currentRank = getRankByWeight(sessionMax, normalizedMg, ex.name);
               const muscleState = recoveryStates[normalizedMg];
               const isFatigued = muscleState && muscleState.percent < 40;
+              const prevEx = exercises[exIdx - 1];
+              const nextEx = exercises[exIdx + 1];
+              const inSuperset = !!ex.supersetId && ((prevEx && prevEx.supersetId === ex.supersetId) || (nextEx && nextEx.supersetId === ex.supersetId));
 
               return (
-                <View key={ex.id} className="rounded-3xl p-5 border" style={{ backgroundColor: colors.card, borderColor: colors.border }}>
+                <View
+                  key={ex.id}
+                  className="rounded-3xl p-5 border"
+                  style={{
+                    backgroundColor: colors.card,
+                    borderColor: inSuperset ? '#a855f766' : colors.border,
+                    borderLeftWidth: inSuperset ? 3 : 1,
+                    borderLeftColor: inSuperset ? '#a855f7' : colors.border
+                  }}
+                >
+                  {inSuperset && (
+                    <View className="flex-row items-center gap-x-1.5 mb-3 self-start px-2 py-1 rounded-lg bg-purple-500/10">
+                      <LinkIcon size={10} color="#a855f7" />
+                      <Text className="text-purple-400 text-[9px] font-black uppercase tracking-wider">Superserie</Text>
+                    </View>
+                  )}
                   <View className="flex-row justify-between items-start mb-4">
                     <View className="flex-1 pr-4">
                       <View className="flex-row items-center gap-x-2">

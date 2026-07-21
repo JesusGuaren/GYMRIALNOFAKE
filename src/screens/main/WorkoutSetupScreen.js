@@ -27,6 +27,7 @@ export default function WorkoutSetupScreen({ navigation, route }) {
       exercise_id: re.exercise_id,
       name: re.exercises.name,
       muscle_group: re.exercises.muscle_group || 'Arms',
+      supersetId: re.superset_id || null,
       sets: [{ weight: 0, reps: 0, rpe: 8, type: 'Normal', isCompleted: false }]
     }));
 

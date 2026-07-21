@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { View, Text, TouchableOpacity, ScrollView, TextInput, Alert, Modal, Image } from 'react-native';
-import { ChevronLeft, Save, Plus, Trash2, ArrowUp, ArrowDown, X, Info, Dumbbell, Sparkles } from 'lucide-react-native';
+import { ChevronLeft, Save, Plus, Trash2, ArrowUp, ArrowDown, X, Info, Dumbbell, Sparkles, Link2, Unlink } from 'lucide-react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import useStore, { THEMES } from '../../store/useStore';
 import * as Haptics from 'expo-haptics';
@@ -43,7 +43,8 @@ export default function RoutineEditScreen({ navigation, route }) {
           name: re.exercises?.name || '',
           muscle_group: re.exercises?.muscle_group || 'Arms',
           default_sets: re.default_sets || 3,
-          default_reps: re.default_reps || 10
+          default_reps: re.default_reps || 10,
+          supersetId: re.superset_id || null
         })) || [];
         setExercises(loadedExercises);
       }
@@ -63,7 +64,8 @@ export default function RoutineEditScreen({ navigation, route }) {
       name: ex.name,
       muscle_group: ex.muscle_group,
       default_sets: 3,
-      default_reps: 10
+      default_reps: 10,
+      supersetId: null
     }]);
     setHasChanges(true);
     setShowSelector(false);
@@ -104,9 +106,38 @@ export default function RoutineEditScreen({ navigation, route }) {
     if (targetIdx < 0 || targetIdx >= exercises.length) return;
 
     const updated = [...exercises];
+    // Reordenar rompe la adyacencia que define una superserie, así que
+    // se desvincula en vez de dejar un supersetId "huérfano" e inconsistente.
+    if (updated[idx].supersetId) updated[idx] = { ...updated[idx], supersetId: null };
+    if (updated[targetIdx].supersetId) updated[targetIdx] = { ...updated[targetIdx], supersetId: null };
+
     const temp = updated[idx];
     updated[idx] = updated[targetIdx];
     updated[targetIdx] = temp;
+
+    setExercises(updated);
+    setHasChanges(true);
+  };
+
+  // Vincula/desvincula el ejercicio en idx con el siguiente (idx + 1) como superserie.
+  // Solo soporta parejas: un ejercicio no puede pertenecer a 2 superseries a la vez.
+  const toggleSuperset = (idx) => {
+    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+    const updated = [...exercises];
+    const a = updated[idx];
+    const b = updated[idx + 1];
+    if (!b) return;
+
+    if (a.supersetId && a.supersetId === b.supersetId) {
+      updated[idx] = { ...a, supersetId: null };
+      updated[idx + 1] = { ...b, supersetId: null };
+    } else if (!a.supersetId && !b.supersetId) {
+      const supersetId = `ss_${Date.now()}`;
+      updated[idx] = { ...a, supersetId };
+      updated[idx + 1] = { ...b, supersetId };
+    } else {
+      return; // Uno de los dos ya pertenece a otra superserie
+    }
 
     setExercises(updated);
     setHasChanges(true);
@@ -224,12 +255,31 @@ export default function RoutineEditScreen({ navigation, route }) {
             </View>
           ) : (
             <View className="gap-y-4">
-              {exercises.map((ex, idx) => (
+              {exercises.map((ex, idx) => {
+                const nextEx = exercises[idx + 1];
+                const isPairedWithNext = !!ex.supersetId && nextEx?.supersetId === ex.supersetId;
+                const isPairedWithPrev = idx > 0 && exercises[idx - 1].supersetId === ex.supersetId && !!ex.supersetId;
+                const canLinkNext = nextEx && !ex.supersetId && !nextEx.supersetId;
+
+                return (
+                <React.Fragment key={ex.id}>
                 <View
-                  key={ex.id}
                   className="border p-4 rounded-2xl"
-                  style={{ backgroundColor: colors.card, borderColor: colors.border }}
+                  style={{
+                    backgroundColor: colors.card,
+                    borderColor: ex.supersetId ? '#a855f766' : colors.border,
+                    borderLeftWidth: ex.supersetId ? 3 : 1,
+                    borderLeftColor: ex.supersetId ? '#a855f7' : colors.border
+                  }}
                 >
+                  {ex.supersetId && (
+                    <View className="flex-row items-center gap-x-1.5 mb-3 self-start px-2 py-1 rounded-lg bg-purple-500/10">
+                      <Link2 size={10} color="#a855f7" />
+                      <Text className="text-purple-400 text-[9px] font-black uppercase tracking-wider">
+                        Superserie {isPairedWithPrev ? '· Parte 2' : '· Parte 1'}
+                      </Text>
+                    </View>
+                  )}
                   <View className="flex-row justify-between items-center mb-3">
                     <View className="flex-1 pr-4">
                       <Text className="text-white font-bold text-base">{ex.name}</Text>
@@ -289,7 +339,32 @@ export default function RoutineEditScreen({ navigation, route }) {
                     </View>
                   </View>
                 </View>
-              ))}
+
+                {(isPairedWithNext || canLinkNext) && (
+                  <TouchableOpacity
+                    onPress={() => toggleSuperset(idx)}
+                    className="self-center -my-2 flex-row items-center gap-x-1.5 px-3 py-1.5 rounded-full border z-10"
+                    style={{
+                      backgroundColor: isPairedWithNext ? '#a855f71A' : colors.bg,
+                      borderColor: isPairedWithNext ? '#a855f74D' : colors.border
+                    }}
+                  >
+                    {isPairedWithNext ? (
+                      <>
+                        <Unlink size={11} color="#a855f7" />
+                        <Text className="text-purple-400 text-[9px] font-black uppercase tracking-wider">Desvincular</Text>
+                      </>
+                    ) : (
+                      <>
+                        <Link2 size={11} color="#64748b" />
+                        <Text className="text-slate-500 text-[9px] font-black uppercase tracking-wider">Vincular como superserie</Text>
+                      </>
+                    )}
+                  </TouchableOpacity>
+                )}
+                </React.Fragment>
+                );
+              })}
             </View>
           )}
 

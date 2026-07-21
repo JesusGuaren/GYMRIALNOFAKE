@@ -427,7 +427,8 @@ const useStore = create(
       set_number: index + 1,
       weight: entry.weight,
       reps: entry.reps,
-      rpe: entry.rpe
+      rpe: entry.rpe,
+      superset_id: entry.superset_id || null
     }));
 
     const { error } = await supabase.from('workout_entries').insert(formattedEntries);
