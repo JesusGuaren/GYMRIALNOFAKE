@@ -4,6 +4,7 @@ import { ChevronLeft, TrendingUp, Target, Activity, Calendar } from 'lucide-reac
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import Svg, { Polyline, Circle, Defs, LinearGradient, Stop, Path } from 'react-native-svg';
 import useStore, { THEMES } from '../../store/useStore';
+import { calculate1RM } from '../../lib/rankingSystem';
 import Animated, { FadeIn } from 'react-native-reanimated';
 
 const { width } = Dimensions.get('window');
@@ -78,8 +79,8 @@ export default function ExerciseProgressScreen({ route, navigation }) {
     return entries.map(session => {
       const weights = session.entries.map(e => e.weight);
       const maxWeight = Math.max(...weights);
-      const rms = session.entries.map(e => e.weight * (1 + (e.reps / 30)));
-      const maxRM = Math.round(Math.max(...rms));
+      const rms = session.entries.map(e => calculate1RM(e.weight, e.reps));
+      const maxRM = Math.max(...rms);
       const volume = session.entries.reduce((acc, e) => acc + (e.weight * e.reps), 0);
       return {
         date: new Date(session.date).toLocaleDateString(undefined, { month: 'short', day: 'numeric' }),
@@ -102,8 +103,8 @@ export default function ExerciseProgressScreen({ route, navigation }) {
 
   return (
     <View style={{ flex: 1, backgroundColor: colors.bg, paddingTop: insets.top }}>
-      <View className="px-5 py-4 border-b border-slate-900 flex-row items-center gap-x-4">
-        <TouchableOpacity onPress={() => navigation.goBack()} className="w-10 h-10 rounded-full bg-slate-900 items-center justify-center">
+      <View className="px-5 py-4 border-b flex-row items-center gap-x-4" style={{ borderColor: colors.border }}>
+        <TouchableOpacity onPress={() => navigation.goBack()} className="w-10 h-10 rounded-full items-center justify-center" style={{ backgroundColor: colors.card }}>
           <ChevronLeft color="white" size={20} />
         </TouchableOpacity>
         <View>
@@ -115,17 +116,17 @@ export default function ExerciseProgressScreen({ route, navigation }) {
       <ScrollView className="flex-1 px-5 pt-6" contentContainerStyle={{ paddingBottom: 100 }}>
         {/* Stats Cards */}
         <View className="flex-row gap-x-3 mb-8">
-           <View className="flex-1 bg-slate-900 p-4 rounded-3xl border border-slate-800 items-center">
-              <Target size={16} color="#3b82f6" className="mb-2" />
-              <Text className="text-white text-lg font-black">{currentStats.rm1}k</Text>
+           <View className="flex-1 p-4 rounded-3xl border items-center" style={{ backgroundColor: colors.card, borderColor: colors.border }}>
+              <Target size={16} color={colors.accent} className="mb-2" />
+              <Text className="text-white text-lg font-black">{currentStats.rm1}kg</Text>
               <Text className="text-slate-500 text-[8px] font-bold uppercase tracking-tighter">1RM Est.</Text>
            </View>
-           <View className="flex-1 bg-slate-900 p-4 rounded-3xl border border-slate-800 items-center">
+           <View className="flex-1 p-4 rounded-3xl border items-center" style={{ backgroundColor: colors.card, borderColor: colors.border }}>
               <TrendingUp size={16} color="#8b5cf6" className="mb-2" />
-              <Text className="text-white text-lg font-black">{currentStats.weight}k</Text>
+              <Text className="text-white text-lg font-black">{currentStats.weight}kg</Text>
               <Text className="text-slate-500 text-[8px] font-bold uppercase tracking-tighter">Max Peso</Text>
            </View>
-           <View className="flex-1 bg-slate-900 p-4 rounded-3xl border border-slate-800 items-center">
+           <View className="flex-1 p-4 rounded-3xl border items-center" style={{ backgroundColor: colors.card, borderColor: colors.border }}>
               <Activity size={16} color="#10b981" className="mb-2" />
               <Text className="text-white text-lg font-black">{currentStats.volume > 1000 ? (currentStats.volume/1000).toFixed(1)+'k' : currentStats.volume}</Text>
               <Text className="text-slate-500 text-[8px] font-bold uppercase tracking-tighter">Volumen</Text>
@@ -133,13 +134,13 @@ export default function ExerciseProgressScreen({ route, navigation }) {
         </View>
 
         {chartData.length < 2 ? (
-          <View className="bg-slate-900/50 border border-dashed border-slate-800 rounded-3xl p-10 items-center">
+          <View className="border border-dashed rounded-3xl p-10 items-center" style={{ backgroundColor: colors.card, borderColor: colors.border }}>
              <Calendar size={48} color="#475569" opacity={0.3} className="mb-4" />
              <Text className="text-slate-500 text-center text-sm font-medium">Necesitas al menos 2 sesiones para generar gráficas.</Text>
           </View>
         ) : (
           <View className="gap-y-8">
-            <Animated.View entering={FadeIn.delay(100)} className="bg-slate-900 p-6 rounded-[32px] border border-slate-800">
+            <Animated.View entering={FadeIn.delay(100)} className="p-6 rounded-[32px] border" style={{ backgroundColor: colors.card, borderColor: colors.border }}>
                <View className="flex-row justify-between items-center mb-6">
                  <Text className="text-white font-black text-base">Fuerza Estimada (1RM)</Text>
                  <View className="flex-row items-center gap-x-1">
@@ -148,10 +149,10 @@ export default function ExerciseProgressScreen({ route, navigation }) {
                     </Text>
                  </View>
                </View>
-               <SimpleLineChart data={chartData} color="#3b82f6" dataKey="rm1" />
+               <SimpleLineChart data={chartData} color={colors.accent} dataKey="rm1" />
             </Animated.View>
 
-            <Animated.View entering={FadeIn.delay(300)} className="bg-slate-900 p-6 rounded-[32px] border border-slate-800">
+            <Animated.View entering={FadeIn.delay(300)} className="p-6 rounded-[32px] border" style={{ backgroundColor: colors.card, borderColor: colors.border }}>
                <View className="flex-row justify-between items-center mb-6">
                  <Text className="text-white font-black text-base">Carga de Trabajo (Volumen)</Text>
                  <View className="flex-row items-center gap-x-1">

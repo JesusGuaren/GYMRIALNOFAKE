@@ -88,6 +88,13 @@ export default function ProfileScreen({ navigation }) {
     }
   };
 
+  const handleThemeSelect = (themeId) => {
+    setGlobalTheme(themeId);
+    updateUserProfile({ theme: themeId }).catch((error) => {
+      console.error('Error al guardar el tema:', error);
+    });
+  };
+
   const handleExportJSON = async () => {
     setIsExporting(true);
     try {
@@ -508,7 +515,7 @@ export default function ProfileScreen({ navigation }) {
                     </Text>
                   </View>
                   {activeTooltip === type && (
-                    <View className="bg-slate-950 p-3 rounded-xl mb-2 border border-slate-800">
+                    <View className="p-3 rounded-xl mb-2 border" style={{ backgroundColor: colors.bg, borderColor: colors.border }}>
                       <Text className="text-slate-500 text-[11px] leading-relaxed font-inter-medium">{macroExplanations[type]}</Text>
                     </View>
                   )}
@@ -660,7 +667,7 @@ export default function ProfileScreen({ navigation }) {
                 ].map(t => (
                   <TouchableOpacity 
                     key={t.id}
-                    onPress={() => setGlobalTheme(t.id)}
+                    onPress={() => handleThemeSelect(t.id)}
                     className="flex-1 min-w-[140px] p-4 rounded-2xl border-2 flex-row items-center gap-x-3"
                     style={{ 
                       backgroundColor: '#020617',
@@ -685,16 +692,17 @@ export default function ProfileScreen({ navigation }) {
           className="w-full mt-2"
         >
           <Save size={20} color="white" className="mr-2" />
-          <Text className="text-white font-outfit-bold text-lg uppercase tracking-widest">Guardar Perfil</Text>
+          <Text className="font-outfit-bold text-lg uppercase tracking-widest" style={{ color: colors.accentText }}>Guardar Perfil</Text>
         </PreciseButton>
 
-        <TouchableOpacity 
+        <TouchableOpacity
           onPress={() => {
             Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
             useStore.getState().resetAllTutorials();
             Alert.alert("Tutoriales Restablecidos", "Verás las guías contextuales la próxima vez que visites cada pantalla.");
           }}
-          className="w-full mt-4 py-4 border border-slate-800 rounded-2xl items-center justify-center bg-slate-900/30"
+          className="w-full mt-4 py-4 rounded-2xl items-center justify-center border"
+          style={{ backgroundColor: `${colors.card}80`, borderColor: colors.border }}
         >
           <Text className="text-slate-400 font-bold text-xs uppercase tracking-widest">Reiniciar Onboarding</Text>
         </TouchableOpacity>

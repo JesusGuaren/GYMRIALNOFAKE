@@ -1,12 +1,13 @@
 import React, { useMemo, useState, useEffect, useRef } from 'react';
 import { View, Text, ScrollView, TouchableOpacity, TextInput } from 'react-native';
-import { Dumbbell, Flame, LogOut, User as UserIcon, ChevronRight, BookOpen, Sparkles, Bot, X, Send, Trophy, Zap, MessageSquare, Plus } from 'lucide-react-native';
+import { Dumbbell, Flame, LogOut, User as UserIcon, ChevronRight, BookOpen, Sparkles, Bot, X, Send, Trophy, Zap, MessageSquare, Plus, Calculator } from 'lucide-react-native';
 import * as Haptics from 'expo-haptics';
 import useStore, { THEMES } from '../../store/useStore';
-import { getRankByWeight, calculate1RM } from '../../lib/rankingSystem';
+import { getBestRankEver } from '../../lib/rankingSystem';
 import MuscleHeatmapNative from '../../components/MuscleHeatmapNative';
 import SolidCard from '../../components/common/SolidCard';
 import PreciseButton from '../../components/common/PreciseButton';
+import RMCalculatorModal from '../../components/RMCalculatorModal';
 import { calculateStreak, getEarnedAchievements } from '../../services/AchievementService';
 import InteractiveBodySection from '../../components/InteractiveBodySection';
 import { normalizeMuscleGroup, translateMuscleGroup } from '../../constants/Muscles';
@@ -20,6 +21,7 @@ export default function DashboardScreen({ navigation }) {
   console.log("[Render Debug] DashboardScreen rendering...");
 
   const [selectedMuscle, setSelectedMuscle] = useState(null);
+  const [showRMCalc, setShowRMCalc] = useState(false);
   const mainScrollViewRef = useRef();
 
   const activeProgram = (programs || []).find(p => p.is_active);
@@ -54,24 +56,7 @@ export default function DashboardScreen({ navigation }) {
     return getLvl(xp);
   }, [workouts]);
 
-  const globalRank = useMemo(() => {
-    let bestRankRatio = -1;
-    let rank = getRankByWeight(0, 'Arms'); 
-    workouts.forEach(w => {
-      w.workout_entries?.forEach(e => {
-        const rawMg = e.exercises?.muscle_group || 'Arms';
-        const mg = normalizeMuscleGroup(rawMg);
-        const exName = e.exercises?.name || '';
-        const rm = calculate1RM(e.weight, e.reps);
-        const r = getRankByWeight(rm, mg, exName);
-        if (r.minRatio > bestRankRatio) {
-          bestRankRatio = r.minRatio;
-          rank = r;
-        }
-      });
-    });
-    return rank;
-  }, [workouts]);
+  const globalRank = useMemo(() => getBestRankEver(workouts), [workouts]);
 
   // Total volume calculation
   const totalVolumeKg = useMemo(() => {
@@ -207,7 +192,7 @@ export default function DashboardScreen({ navigation }) {
             </View>
             {/* XP PROGRESS BAR */}
             <View className="flex-row items-center gap-x-2 mt-1.5 w-11/12">
-              <View className="flex-grow h-1.5 rounded-full bg-slate-900 overflow-hidden border border-slate-800/40">
+              <View className="flex-grow h-1.5 rounded-full overflow-hidden border" style={{ backgroundColor: colors.card, borderColor: colors.border }}>
                 <View 
                   className="h-full rounded-full" 
                   style={{ width: `${levelInfo.progress * 100}%`, backgroundColor: colors.accent }} 
@@ -220,28 +205,43 @@ export default function DashboardScreen({ navigation }) {
           </View>
         </TouchableOpacity>
 
-        {/* Elite Coach Robot Button */}
-        <TouchableOpacity 
-          onPress={handleHeaderCoachPress} 
-          className="w-10 h-10 rounded-xl border items-center justify-center mr-2 relative"
+        {/* Barra de herramientas unificada (antes eran 3 cajas sueltas) */}
+        <View
+          className="flex-row items-center rounded-xl border overflow-hidden"
           style={{ backgroundColor: colors.card, borderColor: colors.border }}
         >
-          <Bot color={colors.accent} size={18} />
-          {hasNotification && (
-            <View 
-              className="absolute top-2 right-2 w-2.5 h-2.5 rounded-full bg-emerald-500 border border-slate-950"
-              style={{ shadowColor: '#10b981', shadowOffset: { width: 0, height: 0 }, shadowOpacity: 0.8, shadowRadius: 3 }}
-            />
-          )}
-        </TouchableOpacity>
+          <TouchableOpacity
+            onPress={() => setShowRMCalc(true)}
+            className="w-10 h-10 items-center justify-center"
+          >
+            <Calculator color={colors.accent} size={18} />
+          </TouchableOpacity>
 
-        <TouchableOpacity 
-          onPress={logout} 
-          className="w-10 h-10 rounded-xl border items-center justify-center"
-          style={{ backgroundColor: colors.card, borderColor: colors.border }}
-        >
-          <LogOut color="#f43f5e" size={18} />
-        </TouchableOpacity>
+          <View style={{ width: 1, height: 20, backgroundColor: colors.border }} />
+
+          {/* Elite Coach Robot Button */}
+          <TouchableOpacity
+            onPress={handleHeaderCoachPress}
+            className="w-10 h-10 items-center justify-center relative"
+          >
+            <Bot color={colors.accent} size={18} />
+            {hasNotification && (
+              <View
+                className="absolute top-2 right-2 w-2.5 h-2.5 rounded-full bg-emerald-500 border"
+                style={{ borderColor: colors.card, shadowColor: '#10b981', shadowOffset: { width: 0, height: 0 }, shadowOpacity: 0.8, shadowRadius: 3 }}
+              />
+            )}
+          </TouchableOpacity>
+
+          <View style={{ width: 1, height: 20, backgroundColor: colors.border }} />
+
+          <TouchableOpacity
+            onPress={logout}
+            className="w-10 h-10 items-center justify-center"
+          >
+            <LogOut color="#f43f5e" size={18} />
+          </TouchableOpacity>
+        </View>
       </View>
 
       {/* Barra de Progreso y Estatus */}
@@ -280,20 +280,25 @@ export default function DashboardScreen({ navigation }) {
         className="p-5 rounded-[24px] border mb-6"
         style={{ backgroundColor: colors.card, borderColor: colors.border }}
       >
-        <View className="flex-row justify-between items-center mb-2">
-          <Text 
-            style={{ color: hero.labelColor }} 
+        <View className="flex-row flex-wrap justify-between items-center gap-y-1.5 mb-2">
+          <Text
+            style={{ color: hero.labelColor, flexShrink: 1 }}
             className="text-[9px] font-inter-bold uppercase tracking-widest"
+            numberOfLines={1}
           >
             {hero.label}
           </Text>
           {activeProgram && (
-            <View className="flex-row items-center gap-x-1 bg-slate-900/60 px-2 py-0.5 rounded-full border border-slate-800/40">
+            <TouchableOpacity
+              onPress={() => navigation.navigate('ProgramManager')}
+              className="flex-row items-center gap-x-1 px-2 py-0.5 rounded-full border"
+              style={{ backgroundColor: colors.bg + '99', borderColor: colors.border, maxWidth: '55%' }}
+            >
               <BookOpen size={9} color={colors.accent} />
-              <Text style={{ color: colors.accent }} className="text-[8px] font-inter-bold uppercase tracking-wider">
+              <Text style={{ color: colors.accent, flexShrink: 1 }} className="text-[8px] font-inter-bold uppercase tracking-wider" numberOfLines={1}>
                 {activeProgram.name}
               </Text>
-            </View>
+            </TouchableOpacity>
           )}
         </View>
 
@@ -315,9 +320,9 @@ export default function DashboardScreen({ navigation }) {
           variant={hero.variant}
           className="w-full h-12 rounded-xl"
         >
-          <Flame size={16} color={hero.variant === 'secondary' ? colors.accent : 'white'} className="mr-2" />
-          <Text 
-            style={{ color: hero.variant === 'secondary' ? colors.accent : 'white' }} 
+          <Flame size={16} color={hero.variant === 'secondary' ? colors.accent : hero.variant === 'primary' ? colors.accentText : 'white'} className="mr-2" />
+          <Text
+            style={{ color: hero.variant === 'secondary' ? colors.accent : hero.variant === 'primary' ? colors.accentText : 'white' }}
             className="text-xs font-outfit-bold tracking-wider uppercase"
           >
             {hero.btnText}
@@ -359,7 +364,7 @@ export default function DashboardScreen({ navigation }) {
             >
               <View className="flex-row items-center gap-x-4 flex-1">
                 {/* Left date block */}
-                <View className="items-center justify-center bg-slate-900 border border-slate-800/80 rounded-xl px-2.5 py-1.5">
+                <View className="items-center justify-center border rounded-xl px-2.5 py-1.5" style={{ backgroundColor: colors.bg, borderColor: colors.border }}>
                   <Text className="text-[8px] font-inter-bold text-slate-500 uppercase">Última</Text>
                   <Text style={{ color: colors.accent }} className="text-xs font-outfit-bold">{dateLabel}</Text>
                 </View>
@@ -382,24 +387,31 @@ export default function DashboardScreen({ navigation }) {
           );
         })()
       ) : (
-        <View className="bg-slate-900/40 border border-slate-800 p-6 rounded-[32px] items-center justify-center py-8 mt-2 mb-6">
-          <View className="w-12 h-12 rounded-full bg-slate-950 items-center justify-center mb-4 border border-slate-850">
+        <View className="border p-6 rounded-[32px] items-center justify-center py-8 mt-2 mb-6" style={{ backgroundColor: colors.card, borderColor: colors.border }}>
+          <View className="w-12 h-12 rounded-full items-center justify-center mb-4 border" style={{ backgroundColor: colors.bg, borderColor: colors.border }}>
             <Trophy size={20} color="#64748b" />
           </View>
           <Text className="text-white font-black text-sm text-center">Sin entrenamientos registrados</Text>
           <Text className="text-slate-400 text-xs text-center mt-1 px-4 leading-relaxed font-medium">
             Completa tu primera sesión para comenzar a acumular XP, subir de nivel, ver tus gráficos de volumen y recibir consejos del Coach inteligente.
           </Text>
-          <TouchableOpacity 
+          <TouchableOpacity
             onPress={() => navigation.navigate('WorkoutSetup')}
-            className="mt-5 px-6 py-2.5 bg-blue-600 rounded-2xl flex-row items-center gap-x-1.5 shadow-lg shadow-blue-600/20"
+            className="mt-5 px-6 py-2.5 rounded-2xl flex-row items-center gap-x-1.5 shadow-lg"
+            style={{ backgroundColor: colors.accent, shadowColor: colors.accent }}
           >
-            <Plus size={16} color="white" strokeWidth={2.5} />
-            <Text className="text-white font-bold text-xs uppercase">Iniciar Entrenamiento</Text>
+            <Plus size={16} color={colors.accentText} strokeWidth={2.5} />
+            <Text style={{ color: colors.accentText }} className="font-bold text-xs uppercase">Iniciar Entrenamiento</Text>
           </TouchableOpacity>
         </View>
       )}
       </ScrollView>
+
+      <RMCalculatorModal
+        visible={showRMCalc}
+        onClose={() => setShowRMCalc(false)}
+        colors={colors}
+      />
 
       <ContextualTooltip
         visible={completedTutorials ? !completedTutorials.dashboard : true}

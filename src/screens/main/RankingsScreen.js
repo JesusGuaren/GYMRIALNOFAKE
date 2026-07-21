@@ -80,7 +80,7 @@ export default function RankingsScreen({ navigation }) {
           <View key={group} className="mb-10">
             <View className="flex-row items-center gap-x-3 mb-6">
               <View className="w-8 h-8 rounded-lg items-center justify-center" style={{ backgroundColor: colors.accent }}>
-                <Award size={16} color="white" />
+                <Award size={16} color={colors.accentText} />
               </View>
               <Text className="text-lg font-black text-white">
                 {translateMuscleGroup(group)}
@@ -96,7 +96,7 @@ export default function RankingsScreen({ navigation }) {
                   style={{ backgroundColor: colors.card, borderColor: colors.border, borderLeftWidth: 4, borderLeftColor: ex.rank.color }}
                 >
                   <View className="flex-row items-center gap-x-4">
-                    <View className="w-11 h-11 items-center justify-center bg-slate-950/50 rounded-xl">
+                    <View className="w-11 h-11 items-center justify-center rounded-xl" style={{ backgroundColor: colors.bg + '80' }}>
                        <Award size={24} color={ex.rank.color} />
                     </View>
                     <View>

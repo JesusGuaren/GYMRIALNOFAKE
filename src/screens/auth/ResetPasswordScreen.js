@@ -3,11 +3,13 @@ import { View, Text, KeyboardAvoidingView, Platform, Alert } from 'react-native'
 import { StatusBar } from 'expo-status-bar';
 import { supabase } from '../../lib/supabase';
 import { Lock, Sparkles } from 'lucide-react-native';
-import useStore from '../../store/useStore';
+import useStore, { THEMES } from '../../store/useStore';
 import PreciseInput from '../../components/common/PreciseInput';
 import PreciseButton from '../../components/common/PreciseButton';
 
 export default function ResetPasswordScreen() {
+  const theme = useStore(state => state.theme);
+  const colors = THEMES[theme] || THEMES.midnight;
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const [loading, setLoading] = useState(false);
@@ -60,16 +62,20 @@ export default function ResetPasswordScreen() {
   }
 
   return (
-    <KeyboardAvoidingView 
+    <KeyboardAvoidingView
       behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-      className="flex-1 bg-slate-950"
+      className="flex-1"
+      style={{ backgroundColor: colors.bg }}
     >
       <StatusBar style="light" />
       <View className="flex-1 justify-center px-8">
         {/* Header Section */}
         <View className="items-center mb-10">
-          <View className="w-16 h-16 bg-blue-600/20 rounded-full items-center justify-center mb-4 border border-blue-500/30">
-            <Lock size={32} color="#3b82f6" strokeWidth={1.5} />
+          <View
+            className="w-16 h-16 rounded-full items-center justify-center mb-4 border"
+            style={{ backgroundColor: `${colors.accent}33`, borderColor: `${colors.accent}4D` }}
+          >
+            <Lock size={32} color={colors.accent} strokeWidth={1.5} />
           </View>
           <Text className="text-3xl font-extrabold text-white text-center tracking-tight">Nueva Contraseña</Text>
           <Text className="text-slate-400 text-sm text-center mt-2 px-4 leading-relaxed">
@@ -105,7 +111,7 @@ export default function ResetPasswordScreen() {
           loading={loading}
           className="w-full mt-8"
         >
-          <Text className="text-white text-base font-outfit-bold uppercase tracking-wider">
+          <Text className="text-base font-outfit-bold uppercase tracking-wider" style={{ color: colors.accentText }}>
             Guardar Contraseña
           </Text>
         </PreciseButton>

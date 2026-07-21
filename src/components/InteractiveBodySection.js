@@ -332,7 +332,7 @@ export const InteractiveBodySection = React.memo(function InteractiveBodySection
               className="flex-1 h-10 rounded-xl items-center justify-center"
               style={{ backgroundColor: colors.accent }}
             >
-              <Text className="text-white font-outfit-bold text-[10px] tracking-wider uppercase">
+              <Text style={{ color: colors.accentText }} className="font-outfit-bold text-[10px] tracking-wider uppercase">
                 Consultar Coach
               </Text>
             </TouchableOpacity>

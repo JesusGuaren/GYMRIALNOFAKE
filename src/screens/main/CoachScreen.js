@@ -288,21 +288,23 @@ export default function CoachScreen({ route, navigation }) {
         style={{ flex: 1 }}
       >
         {/* Cabecera Premium con Safe Area superior */}
-        <View 
-          className="px-5 border-b flex-row justify-between items-center bg-slate-950/60"
-          style={{ 
+        <View
+          className="px-5 border-b flex-row justify-between items-center"
+          style={{
+            backgroundColor: colors.card + '99',
             borderBottomColor: `${colors.border}40`,
             paddingTop: Math.max(insets.top, 16),
             paddingBottom: 16
           }}
         >
           <View className="flex-row items-center gap-x-3.5">
-            <TouchableOpacity 
+            <TouchableOpacity
               onPress={() => {
                 Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
                 navigation.goBack();
               }}
-              className="p-1 rounded-lg bg-slate-900 border border-slate-800"
+              className="p-1 rounded-lg border"
+              style={{ backgroundColor: colors.card, borderColor: colors.border }}
             >
               <ChevronLeft size={20} color="#f8fafc" />
             </TouchableOpacity>
@@ -325,9 +327,10 @@ export default function CoachScreen({ route, navigation }) {
           </View>
 
           {/* Nueva conversación */}
-          <TouchableOpacity 
+          <TouchableOpacity
             onPress={handleNewConversation}
-            className="flex-row items-center gap-x-1 px-3 py-1.5 rounded-xl bg-slate-900 border border-slate-800"
+            className="flex-row items-center gap-x-1 px-3 py-1.5 rounded-xl border"
+            style={{ backgroundColor: colors.card, borderColor: colors.border }}
           >
             <Trash2 size={12} color="#f43f5e" />
             <Text className="text-[9px] font-outfit-bold text-rose-500 uppercase tracking-wider">Reiniciar</Text>
@@ -347,8 +350,9 @@ export default function CoachScreen({ route, navigation }) {
             return (
               <View className={`mb-4 flex-row ${isUser ? 'justify-end' : 'justify-start'}`}>
                 {!isUser && (
-                  <View 
-                    className="w-6 h-6 rounded-lg items-center justify-center mr-2.5 mt-1 bg-slate-900 border border-slate-800/80"
+                  <View
+                    className="w-6 h-6 rounded-lg items-center justify-center mr-2.5 mt-1 border"
+                    style={{ backgroundColor: colors.card, borderColor: colors.border }}
                   >
                     <Bot size={11} color={colors.accent} />
                   </View>
@@ -377,13 +381,14 @@ export default function CoachScreen({ route, navigation }) {
           ListFooterComponent={
             isTyping ? (
               <View className="flex-row justify-start mb-4">
-                <View 
-                  className="w-6 h-6 rounded-lg items-center justify-center mr-2.5 mt-1 bg-slate-900 border border-slate-800/80"
+                <View
+                  className="w-6 h-6 rounded-lg items-center justify-center mr-2.5 mt-1 border"
+                  style={{ backgroundColor: colors.card, borderColor: colors.border }}
                 >
                   <Bot size={11} color={colors.accent} />
                 </View>
-                <View 
-                  style={{ backgroundColor: colors.card, borderColor: colors.border }} 
+                <View
+                  style={{ backgroundColor: colors.card, borderColor: colors.border }}
                   className="px-4 py-3 rounded-[20px] rounded-tl-none border flex-row items-center gap-x-2"
                 >
                   <ActivityIndicator size="small" color={colors.accent} />
@@ -408,7 +413,8 @@ export default function CoachScreen({ route, navigation }) {
                 return (
                   <TouchableOpacity
                     onPress={() => sendQuery(item.query)}
-                    className="flex-row items-center gap-x-1.5 px-3 py-2 rounded-full bg-slate-900 border border-slate-800"
+                    className="flex-row items-center gap-x-1.5 px-3 py-2 rounded-full border"
+                    style={{ backgroundColor: colors.card, borderColor: colors.border }}
                   >
                     {IconComp && <IconComp size={10} color={colors.accent} />}
                     <Text className="text-white text-[10px] font-outfit-bold">{item.label}</Text>
@@ -420,9 +426,10 @@ export default function CoachScreen({ route, navigation }) {
         )}
 
         {/* Cuadro de Entrada de Texto Fijo con Safe Area inferior */}
-        <View 
-          className="p-4 border-t bg-slate-950/60 flex-row items-center gap-x-3"
-          style={{ 
+        <View
+          className="p-4 border-t flex-row items-center gap-x-3"
+          style={{
+            backgroundColor: colors.card + '99',
             borderTopColor: `${colors.border}30`,
             paddingBottom: Math.max(insets.bottom, 16)
           }}
@@ -433,15 +440,15 @@ export default function CoachScreen({ route, navigation }) {
             placeholder="Pregunta sobre tu fatiga, marcas, nutrición..."
             placeholderTextColor="#475569"
             onSubmitEditing={() => sendQuery(inputVal)}
-            className="flex-1 bg-slate-900 rounded-2xl h-12 px-4 text-white text-xs font-inter-medium border border-slate-850"
-            style={{ color: 'white' }}
+            className="flex-1 rounded-2xl h-12 px-4 text-white text-xs font-inter-medium border"
+            style={{ color: 'white', backgroundColor: colors.card, borderColor: colors.border }}
           />
           <TouchableOpacity
             onPress={() => sendQuery(inputVal)}
-            className="w-12 h-12 rounded-2xl items-center justify-center bg-blue-600/90"
+            className="w-12 h-12 rounded-2xl items-center justify-center"
             style={{ backgroundColor: colors.accent }}
           >
-            <Send size={15} color="white" />
+            <Send size={15} color={colors.accentText} />
           </TouchableOpacity>
         </View>
       </KeyboardAvoidingView>

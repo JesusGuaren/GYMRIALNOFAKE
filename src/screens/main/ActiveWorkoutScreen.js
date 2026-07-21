@@ -222,6 +222,7 @@ export default function ActiveWorkoutScreen({ navigation }) {
               const prDetected = flatEntries.some(entry => {
                 const exId = entry.exercise_id;
                 const lastBest = workouts
+                  .filter(w => !w.name?.endsWith(String.fromCharCode(0x200B)))
                   .flatMap(w => w.workout_entries || [])
                   .filter(e => e.exercise_id === exId)
                   .sort((a, b) => (b.weight * b.reps) - (a.weight * a.reps))[0];
@@ -251,22 +252,23 @@ export default function ActiveWorkoutScreen({ navigation }) {
   const currentEx = exercises[currentExerciseIdx];
 
   return (
-    <View className="flex-1 bg-slate-950" style={{ paddingTop: insets.top }}>
+    <View className="flex-1" style={{ paddingTop: insets.top, backgroundColor: colors.bg }}>
       {/* Header */}
-      <View className="px-5 py-4 border-b border-slate-900 bg-slate-950/50 flex-row justify-between items-center">
+      <View className="px-5 py-4 border-b flex-row justify-between items-center" style={{ borderColor: colors.border, backgroundColor: colors.card + '80' }}>
         <View className="flex-1 mr-4">
-          <Text className="text-blue-500 text-[10px] font-bold uppercase tracking-widest">{isEditing ? 'Editando Sesión' : 'Sesión Activa'}</Text>
+          <Text style={{ color: colors.accent }} className="text-[10px] font-bold uppercase tracking-widest">{isEditing ? 'Editando Sesión' : 'Sesión Activa'}</Text>
           <Text className="text-white text-lg font-bold" numberOfLines={1}>{workoutName}</Text>
         </View>
         <View className="flex-row items-center gap-x-2">
-          <TouchableOpacity 
+          <TouchableOpacity
             onPress={cancelWorkout}
             disabled={isSaving}
-            className="border border-slate-800 px-4 py-2 rounded-xl bg-slate-900/50"
+            className="px-4 py-2 rounded-xl border"
+            style={{ borderColor: colors.border, backgroundColor: colors.card }}
           >
             <Text className="text-slate-400 font-bold text-xs">Cancelar</Text>
           </TouchableOpacity>
-          <TouchableOpacity 
+          <TouchableOpacity
             onPress={finishWorkout}
             disabled={isSaving}
             className="bg-red-500/10 border border-red-500/20 px-4 py-2 rounded-xl"
@@ -277,24 +279,26 @@ export default function ActiveWorkoutScreen({ navigation }) {
       </View>
 
       {/* Exercise Navigation */}
-      <View className="border-b border-slate-900 bg-slate-950">
+      <View className="border-b" style={{ borderColor: colors.border, backgroundColor: colors.bg }}>
         <ScrollView horizontal showsHorizontalScrollIndicator={false} className="px-5 py-3">
           {exercises.map((ex, idx) => (
             <TouchableOpacity
               key={idx}
               onPress={() => setCurrentExerciseIdx(idx)}
-              className={`mr-2 px-4 py-2 rounded-xl ${currentExerciseIdx === idx ? 'bg-blue-600' : 'bg-slate-900'}`}
+              className="mr-2 px-4 py-2 rounded-xl"
+              style={{ backgroundColor: currentExerciseIdx === idx ? colors.accent : colors.card }}
             >
-              <Text className={`font-bold text-xs ${currentExerciseIdx === idx ? 'text-white' : 'text-slate-400'}`}>
+              <Text className="font-bold text-xs" style={{ color: currentExerciseIdx === idx ? colors.accentText : '#94a3b8' }}>
                 {ex.name}
               </Text>
             </TouchableOpacity>
           ))}
-          <TouchableOpacity 
+          <TouchableOpacity
             onPress={() => setShowSelector(true)}
-            className="p-2 bg-blue-500/10 border border-dashed border-blue-500/30 rounded-xl"
+            className="p-2 rounded-xl border border-dashed"
+            style={{ backgroundColor: colors.accent + '1A', borderColor: colors.accent + '4D' }}
           >
-            <Plus size={18} color="#3b82f6" />
+            <Plus size={18} color={colors.accent} />
           </TouchableOpacity>
         </ScrollView>
       </View>
@@ -305,11 +309,12 @@ export default function ActiveWorkoutScreen({ navigation }) {
           <View className="flex-1 items-center justify-center pt-20">
             <Dumbbell size={64} color="#64748b" style={{ opacity: 0.2 }} />
             <Text className="text-slate-500 mt-4">Aún no hay ejercicios.</Text>
-            <TouchableOpacity 
+            <TouchableOpacity
               onPress={() => setShowSelector(true)}
-              className="mt-6 bg-blue-600 px-6 py-3 rounded-2xl"
+              className="mt-6 px-6 py-3 rounded-2xl"
+              style={{ backgroundColor: colors.accent }}
             >
-              <Text className="text-white font-bold">+ Añadir Ejercicio</Text>
+              <Text style={{ color: colors.accentText }} className="font-bold">+ Añadir Ejercicio</Text>
             </TouchableOpacity>
           </View>
         ) : (
@@ -362,11 +367,11 @@ export default function ActiveWorkoutScreen({ navigation }) {
                        </Text>
                      </View>
                     {suggestion && (
-                      <View 
+                      <View
                         className="p-3 rounded-2xl border flex-row items-center gap-x-3"
-                        style={{ backgroundColor: 'rgba(59, 130, 246, 0.05)', borderColor: 'rgba(59, 130, 246, 0.1)' }}
+                        style={{ backgroundColor: colors.accent + '0D', borderColor: colors.accent + '1A' }}
                       >
-                        <Sparkles size={18} color="#3b82f6" />
+                        <Sparkles size={18} color={colors.accent} />
                         <Text className="text-slate-300 text-xs flex-1">{suggestion.text} 🔥</Text>
                       </View>
                     )}
@@ -381,16 +386,16 @@ export default function ActiveWorkoutScreen({ navigation }) {
               <Text className="flex-1 text-center text-[10px] text-slate-500 font-bold uppercase">Kg</Text>
               <Text className="flex-1 text-center text-[10px] text-slate-500 font-bold uppercase">Reps</Text>
               <Text className="flex-1 text-center text-[10px] text-slate-500 font-bold uppercase">RPE</Text>
-              <TouchableOpacity 
+              <TouchableOpacity
                 onPress={() => setShowStatusHelp(!showStatusHelp)}
                 className="w-12 items-center"
               >
-                <HelpCircle size={14} color={showStatusHelp ? "#3b82f6" : "#64748b"} />
+                <HelpCircle size={14} color={showStatusHelp ? colors.accent : "#64748b"} />
               </TouchableOpacity>
             </View>
 
             {showStatusHelp && (
-              <Animated.View entering={FadeIn} className="bg-blue-500/5 p-4 rounded-2xl border border-blue-500/20 mb-6">
+              <Animated.View entering={FadeIn} className="p-4 rounded-2xl border mb-6" style={{ backgroundColor: colors.accent + '0D', borderColor: colors.accent + '33' }}>
                 <View className="flex-row gap-x-2 mb-2">
                   <Text className="text-emerald-500 font-bold text-xs">✅ Verde:</Text>
                   <Text className="text-slate-400 text-xs flex-1">Serie completada. Se guardó y el cronómetro empezó.</Text>
@@ -406,13 +411,13 @@ export default function ActiveWorkoutScreen({ navigation }) {
             <View className="gap-y-3">
               {currentEx.sets.map((set, setIdx) => (
                 <View key={setIdx}>
-                  <View 
-                    className={`flex-row items-center p-3 rounded-2xl border ${set.isCompleted ? 'bg-emerald-500/5 border-emerald-500/20' : 'bg-slate-900 border-slate-800'}`}
-                    style={{ opacity: set.isCompleted ? 0.7 : 1 }}
+                  <View
+                    className={`flex-row items-center p-3 rounded-2xl border ${set.isCompleted ? 'bg-emerald-500/5 border-emerald-500/20' : ''}`}
+                    style={set.isCompleted ? { opacity: 0.7 } : { backgroundColor: colors.card, borderColor: colors.border }}
                   >
                     <Text className="w-10 text-center font-bold text-slate-500">{setIdx + 1}</Text>
                     <View className="flex-1 relative mx-1">
-                      <TextInput 
+                      <TextInput
                         keyboardType="numeric"
                         value={set.weight ? String(set.weight) : ''}
                         onChangeText={(val) => updateSet(currentExerciseIdx, setIdx, 'weight', val)}
@@ -420,9 +425,12 @@ export default function ActiveWorkoutScreen({ navigation }) {
                         placeholderTextColor="#334155"
                         onFocus={() => setFocusedField(`${setIdx}_weight`)}
                         onBlur={() => setFocusedField(null)}
-                        className={`w-full text-white text-center font-bold h-12 rounded-xl pr-8 border ${
-                          focusedField === `${setIdx}_weight` ? 'border-blue-500 bg-blue-950/80 shadow-lg shadow-blue-500/10' : 'border-slate-800/80 bg-slate-950/30'
-                        }`}
+                        className="w-full text-white text-center font-bold h-12 rounded-xl pr-8 border"
+                        style={
+                          focusedField === `${setIdx}_weight`
+                            ? { borderColor: colors.accent, backgroundColor: colors.accent + '26' }
+                            : { borderColor: colors.border, backgroundColor: colors.bg }
+                        }
                       />
                       {isBarbellExercise(currentEx.name || currentEx.exercises?.name) && (
                         <TouchableOpacity
@@ -431,13 +439,14 @@ export default function ActiveWorkoutScreen({ navigation }) {
                             setPlateExName(currentEx.name || currentEx.exercises?.name);
                             setShowPlateCalc(true);
                           }}
-                          className="absolute right-2 top-2 w-8 h-8 rounded-lg bg-blue-500/10 items-center justify-center border border-blue-500/20"
+                          className="absolute right-2 top-2 w-8 h-8 rounded-lg items-center justify-center border"
+                          style={{ backgroundColor: colors.accent + '1A', borderColor: colors.accent + '33' }}
                         >
-                          <Dumbbell size={12} color="#3b82f6" />
+                          <Dumbbell size={12} color={colors.accent} />
                         </TouchableOpacity>
                       )}
                     </View>
-                    <TextInput 
+                    <TextInput
                       keyboardType="numeric"
                       value={set.reps ? String(set.reps) : ''}
                       onChangeText={(val) => updateSet(currentExerciseIdx, setIdx, 'reps', val)}
@@ -445,11 +454,14 @@ export default function ActiveWorkoutScreen({ navigation }) {
                       placeholderTextColor="#334155"
                       onFocus={() => setFocusedField(`${setIdx}_reps`)}
                       onBlur={() => setFocusedField(null)}
-                      className={`flex-1 text-white text-center font-bold h-12 rounded-xl mx-1 border ${
-                        focusedField === `${setIdx}_reps` ? 'border-blue-500 bg-blue-950/80 shadow-lg shadow-blue-500/10' : 'border-slate-800/80 bg-slate-950/30'
-                      }`}
+                      className="flex-1 text-white text-center font-bold h-12 rounded-xl mx-1 border"
+                      style={
+                        focusedField === `${setIdx}_reps`
+                          ? { borderColor: colors.accent, backgroundColor: colors.accent + '26' }
+                          : { borderColor: colors.border, backgroundColor: colors.bg }
+                      }
                     />
-                    <TextInput 
+                    <TextInput
                       keyboardType="numeric"
                       value={set.rpe ? String(set.rpe) : ''}
                       onChangeText={(val) => updateSet(currentExerciseIdx, setIdx, 'rpe', val)}
@@ -457,11 +469,14 @@ export default function ActiveWorkoutScreen({ navigation }) {
                       placeholderTextColor="#334155"
                       onFocus={() => setFocusedField(`${setIdx}_rpe`)}
                       onBlur={() => setFocusedField(null)}
-                      className={`flex-1 text-white text-center font-bold h-12 rounded-xl mx-1 border ${
-                        focusedField === `${setIdx}_rpe` ? 'border-blue-500 bg-blue-950/80 shadow-lg shadow-blue-500/10' : 'border-slate-800/80 bg-slate-950/30'
-                      }`}
+                      className="flex-1 text-white text-center font-bold h-12 rounded-xl mx-1 border"
+                      style={
+                        focusedField === `${setIdx}_rpe`
+                          ? { borderColor: colors.accent, backgroundColor: colors.accent + '26' }
+                          : { borderColor: colors.border, backgroundColor: colors.bg }
+                      }
                     />
-                    <TouchableOpacity 
+                    <TouchableOpacity
                       onPress={() => toggleSetComplete(currentExerciseIdx, setIdx)}
                       className={`w-10 h-10 rounded-xl items-center justify-center ${set.isCompleted ? 'bg-emerald-500' : 'bg-slate-800'}`}
                     >
@@ -470,7 +485,7 @@ export default function ActiveWorkoutScreen({ navigation }) {
                   </View>
 
                   {liveAlerts[`${currentExerciseIdx}_${setIdx}`] && (
-                    <View className="bg-slate-900/50 border-x border-b border-slate-800 rounded-b-2xl p-2 mx-1 mt-[-4px] flex-row items-center gap-x-2">
+                    <View className="border-x border-b rounded-b-2xl p-2 mx-1 mt-[-4px] flex-row items-center gap-x-2" style={{ backgroundColor: colors.card, borderColor: colors.border }}>
                       {liveAlerts[`${currentExerciseIdx}_${setIdx}`].type === 'increase' ? (
                         <Trophy size={14} color="#10b981" />
                       ) : liveAlerts[`${currentExerciseIdx}_${setIdx}`].type === 'decrease' ? (
@@ -490,9 +505,10 @@ export default function ActiveWorkoutScreen({ navigation }) {
               ))}
             </View>
 
-            <TouchableOpacity 
+            <TouchableOpacity
               onPress={() => addSet(currentExerciseIdx)}
-              className="mt-6 p-4 rounded-2xl bg-slate-900 border border-dashed border-slate-800 flex-row justify-center items-center gap-x-2"
+              className="mt-6 p-4 rounded-2xl border border-dashed flex-row justify-center items-center gap-x-2"
+              style={{ backgroundColor: colors.card, borderColor: colors.border }}
             >
               <Plus size={18} color="#64748b" />
               <Text className="text-slate-400 font-bold">Añadir Serie</Text>
@@ -504,8 +520,8 @@ export default function ActiveWorkoutScreen({ navigation }) {
 
       {/* Footer Navigation */}
       {exercises.length > 1 && (
-        <View className="px-5 py-6 bg-slate-950 border-t border-slate-900 flex-row justify-between items-center" style={{ paddingBottom: insets.bottom + 10 }}>
-          <TouchableOpacity 
+        <View className="px-5 py-6 border-t flex-row justify-between items-center" style={{ backgroundColor: colors.bg, borderColor: colors.border, paddingBottom: insets.bottom + 10 }}>
+          <TouchableOpacity
             onPress={() => setCurrentExerciseIdx(prev => Math.max(0, prev - 1))}
             disabled={currentExerciseIdx === 0}
             className="flex-row items-center gap-x-1"
@@ -514,34 +530,34 @@ export default function ActiveWorkoutScreen({ navigation }) {
             <Text className={`font-bold ${currentExerciseIdx === 0 ? 'text-transparent' : 'text-slate-400'}`}>Anterior</Text>
           </TouchableOpacity>
           <Text className="text-slate-500 text-xs font-bold">{currentExerciseIdx + 1} de {exercises.length}</Text>
-          <TouchableOpacity 
+          <TouchableOpacity
             onPress={() => setCurrentExerciseIdx(prev => Math.min(exercises.length - 1, prev + 1))}
             disabled={currentExerciseIdx === exercises.length - 1}
             className="flex-row items-center gap-x-1"
           >
-            <Text className={`font-bold ${currentExerciseIdx === exercises.length - 1 ? 'text-transparent' : 'text-blue-500'}`}>Siguiente</Text>
-            <ChevronRight size={20} color={currentExerciseIdx === exercises.length - 1 ? 'transparent' : '#3b82f6'} />
+            <Text className="font-bold" style={{ color: currentExerciseIdx === exercises.length - 1 ? 'transparent' : colors.accent }}>Siguiente</Text>
+            <ChevronRight size={20} color={currentExerciseIdx === exercises.length - 1 ? 'transparent' : colors.accent} />
           </TouchableOpacity>
         </View>
       )}
 
       {/* Exercise Selector Modal */}
       <Modal visible={showSelector} animationType="slide" transparent>
-        <View className="flex-1 bg-slate-950" style={{ paddingTop: insets.top }}>
-          <View className="px-5 py-4 border-b border-slate-900 flex-row justify-between items-center bg-slate-950">
+        <View className="flex-1" style={{ paddingTop: insets.top, backgroundColor: colors.bg }}>
+          <View className="px-5 py-4 border-b flex-row justify-between items-center" style={{ borderColor: colors.border, backgroundColor: colors.bg }}>
             <View>
               <Text className="text-white text-2xl font-black">Elige tu Arma</Text>
               <Text className="text-slate-500 text-xs">Selecciona para añadir a la rutina</Text>
             </View>
-            <TouchableOpacity onPress={() => setShowSelector(false)} className="bg-slate-900 p-2 rounded-full">
+            <TouchableOpacity onPress={() => setShowSelector(false)} className="p-2 rounded-full" style={{ backgroundColor: colors.card }}>
               <X size={24} color="#64748b" />
             </TouchableOpacity>
           </View>
 
           {/* Search Bar */}
           <View className="px-5 py-4">
-             <View className="bg-slate-900 rounded-2xl px-4 flex-row items-center border border-slate-800">
-               <TextInput 
+             <View className="rounded-2xl px-4 flex-row items-center border" style={{ backgroundColor: colors.card, borderColor: colors.border }}>
+               <TextInput
                  value={searchTerm}
                  onChangeText={setSearchTerm}
                  placeholder="Buscar ejercicio..."
@@ -554,29 +570,30 @@ export default function ActiveWorkoutScreen({ navigation }) {
           <ScrollView className="flex-1 px-5">
             <View className="flex-row flex-wrap justify-between">
               {filteredExercises.map(ex => (
-                <TouchableOpacity 
+                <TouchableOpacity
                   key={ex.id}
                   onPress={() => {
                     handleSelectExercise(ex);
                     setSearchTerm('');
                   }}
-                  className="w-[48%] h-32 bg-slate-900 rounded-2xl border border-slate-800 mb-4 overflow-hidden relative"
+                  className="w-[48%] h-32 rounded-2xl border mb-4 overflow-hidden relative"
+                  style={{ backgroundColor: colors.card, borderColor: colors.border }}
                 >
-                   <Image 
+                   <Image
                      source={MUSCLE_IMAGES[SUB_TO_PRIMARY_MAPPING[normalizeMuscleGroup(ex.muscle_group)]] || { uri: 'https://images.unsplash.com/photo-1534438327276-14e5300c3a48?q=80&w=200&auto=format&fit=crop' }}
                      className="absolute inset-0 w-full h-full opacity-40"
                      resizeMode="cover"
                    />
-                   <View className="absolute inset-0 bg-slate-950/40" />
-                   
+                   <View className="absolute inset-0" style={{ backgroundColor: colors.bg + '66' }} />
+
                    <View className="p-3 justify-between h-full">
-                     <View className="bg-blue-600 self-start px-2 py-0.5 rounded-md shadow-sm">
-                       <Text className="text-[8px] text-white font-black uppercase tracking-tighter">{translateMuscleGroup(ex.muscle_group)}</Text>
+                     <View className="self-start px-2 py-0.5 rounded-md shadow-sm" style={{ backgroundColor: colors.accent }}>
+                       <Text style={{ color: colors.accentText }} className="text-[8px] font-black uppercase tracking-tighter">{translateMuscleGroup(ex.muscle_group)}</Text>
                      </View>
                     <View>
                       <Text className="text-white font-bold text-sm leading-tight">{ex.name}</Text>
-                      <View className="bg-blue-500/20 self-end p-1 rounded-full mt-1">
-                        <Plus size={12} color="#3b82f6" />
+                      <View className="self-end p-1 rounded-full mt-1" style={{ backgroundColor: colors.accent + '33' }}>
+                        <Plus size={12} color={colors.accent} />
                       </View>
                     </View>
                   </View>
@@ -591,27 +608,28 @@ export default function ActiveWorkoutScreen({ navigation }) {
       {/* Exercise Help Modal */}
       <Modal visible={!!showHelpModal} transparent animationType="fade">
         <View className="flex-1 bg-black/80 items-center justify-center p-6">
-           <View className="bg-slate-900 border border-blue-500/30 p-8 rounded-[40px] w-full items-center">
-              <View className="w-20 h-20 rounded-full bg-blue-600/20 items-center justify-center mb-6">
-                 <Dumbbell size={40} color="#3b82f6" />
+           <View className="border p-8 rounded-[40px] w-full items-center" style={{ backgroundColor: colors.card, borderColor: colors.accent + '4D' }}>
+              <View className="w-20 h-20 rounded-full items-center justify-center mb-6" style={{ backgroundColor: colors.accent + '33' }}>
+                 <Dumbbell size={40} color={colors.accent} />
               </View>
               <Text className="text-white text-2xl font-black text-center mb-2">{showHelpModal?.name}</Text>
-               <Text className="text-blue-500 font-bold uppercase tracking-widest text-[10px] mb-6">{translateMuscleGroup(showHelpModal?.muscle_group)}</Text>
-               
+               <Text style={{ color: colors.accent }} className="font-bold uppercase tracking-widest text-[10px] mb-6">{translateMuscleGroup(showHelpModal?.muscle_group)}</Text>
+
                <Text className="text-slate-400 text-center text-sm leading-6 mb-8">
-                 Este ejercicio se enfoca en la hipertrofia de {translateMuscleGroup(showHelpModal?.muscle_group).toLowerCase()}. 
+                 Este ejercicio se enfoca en la hipertrofia de {translateMuscleGroup(showHelpModal?.muscle_group).toLowerCase()}.
                  Mantén una técnica controlada y un rango de movimiento completo para máximos resultados.
                </Text>
 
-              <TouchableOpacity 
+              <TouchableOpacity
                 onPress={() => Linking.openURL(`https://www.youtube.com/results?search_query=como+hacer+${showHelpModal?.name}`)}
-                className="w-full py-4 bg-blue-600 rounded-2xl flex-row items-center justify-center gap-x-3 mb-3 shadow-lg shadow-blue-600/20"
+                className="w-full py-4 rounded-2xl flex-row items-center justify-center gap-x-3 mb-3 shadow-lg"
+                style={{ backgroundColor: colors.accent }}
               >
-                <Play size={20} color="white" strokeWidth={3} />
-                <Text className="text-white font-black uppercase tracking-widest">Ver Ejecución</Text>
+                <Play size={20} color={colors.accentText} strokeWidth={3} />
+                <Text style={{ color: colors.accentText }} className="font-black uppercase tracking-widest">Ver Ejecución</Text>
               </TouchableOpacity>
-              
-              <TouchableOpacity onPress={() => setShowHelpModal(null)} className="w-full py-4 border border-slate-800 rounded-2xl items-center">
+
+              <TouchableOpacity onPress={() => setShowHelpModal(null)} className="w-full py-4 border rounded-2xl items-center" style={{ borderColor: colors.border }}>
                 <Text className="text-slate-500 font-bold">Cerrar</Text>
               </TouchableOpacity>
            </View>

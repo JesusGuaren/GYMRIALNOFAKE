@@ -6,8 +6,11 @@ import { Mail, ChevronLeft, Dumbbell, Sparkles } from 'lucide-react-native';
 import * as Linking from 'expo-linking';
 import PreciseInput from '../../components/common/PreciseInput';
 import PreciseButton from '../../components/common/PreciseButton';
+import useStore, { THEMES } from '../../store/useStore';
 
 export default function ForgotPasswordScreen({ navigation }) {
+  const theme = useStore(state => state.theme);
+  const colors = THEMES[theme] || THEMES.midnight;
   const [email, setEmail] = useState('');
   const [loading, setLoading] = useState(false);
 
@@ -45,17 +48,19 @@ export default function ForgotPasswordScreen({ navigation }) {
   }
 
   return (
-    <KeyboardAvoidingView 
+    <KeyboardAvoidingView
       behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-      className="flex-1 bg-slate-950"
+      className="flex-1"
+      style={{ backgroundColor: colors.bg }}
     >
       <StatusBar style="light" />
-      
+
       {/* Header Navigation */}
       <View className="absolute top-12 left-6 z-10">
-        <TouchableOpacity 
+        <TouchableOpacity
           onPress={() => navigation.goBack()}
-          className="w-10 h-10 bg-slate-900 border border-slate-800 rounded-full items-center justify-center"
+          className="w-10 h-10 rounded-full items-center justify-center border"
+          style={{ backgroundColor: colors.card, borderColor: colors.border }}
         >
           <ChevronLeft color="#e2e8f0" size={24} />
         </TouchableOpacity>
@@ -64,8 +69,11 @@ export default function ForgotPasswordScreen({ navigation }) {
       <View className="flex-1 justify-center px-8">
         {/* Header Section */}
         <View className="items-center mb-10">
-          <View className="w-16 h-16 bg-blue-600/20 rounded-full items-center justify-center mb-4 border border-blue-500/30">
-            <Sparkles size={32} color="#3b82f6" strokeWidth={1.5} />
+          <View
+            className="w-16 h-16 rounded-full items-center justify-center mb-4 border"
+            style={{ backgroundColor: `${colors.accent}33`, borderColor: `${colors.accent}4D` }}
+          >
+            <Sparkles size={32} color={colors.accent} strokeWidth={1.5} />
           </View>
           <Text className="text-3xl font-extrabold text-white text-center tracking-tight">Recuperar Cuenta</Text>
           <Text className="text-slate-400 text-sm text-center mt-2 px-4 leading-relaxed">
@@ -92,7 +100,7 @@ export default function ForgotPasswordScreen({ navigation }) {
           loading={loading}
           className="w-full mt-6"
         >
-          <Text className="text-white text-base font-outfit-bold uppercase tracking-wider">
+          <Text className="text-base font-outfit-bold uppercase tracking-wider" style={{ color: colors.accentText }}>
             Enviar Enlace
           </Text>
         </PreciseButton>

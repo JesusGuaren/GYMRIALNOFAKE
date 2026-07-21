@@ -2,12 +2,14 @@ import React from 'react';
 import { View, Text, TouchableOpacity, ScrollView, Platform } from 'react-native';
 import { Plus, BookOpen, ChevronLeft, Dumbbell, Sparkles } from 'lucide-react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import useStore from '../../store/useStore';
+import useStore, { THEMES } from '../../store/useStore';
 
 export default function WorkoutSetupScreen({ navigation, route }) {
   const insets = useSafeAreaInsets();
   const routines = useStore(state => state.routines);
   const setCurrentActiveWorkout = useStore(state => state.setCurrentActiveWorkout);
+  const theme = useStore(state => state.theme);
+  const colors = THEMES[theme] || THEMES.midnight;
   const date = route?.params?.date || new Date().toISOString().split('T')[0];
 
   const startFreeWorkout = () => {
@@ -37,19 +39,21 @@ export default function WorkoutSetupScreen({ navigation, route }) {
   };
 
   return (
-    <ScrollView 
-      className="flex-1 bg-slate-950" 
-      contentContainerStyle={{ 
-        paddingHorizontal: 20, 
+    <ScrollView
+      className="flex-1"
+      style={{ backgroundColor: colors.bg }}
+      contentContainerStyle={{
+        paddingHorizontal: 20,
         paddingTop: Math.max(insets.top, 20),
-        paddingBottom: 40 
+        paddingBottom: 40
       }}
     >
       {/* Header */}
       <View className="flex-row items-center mb-8 mt-2">
-        <TouchableOpacity 
+        <TouchableOpacity
           onPress={() => navigation.goBack()}
-          className="w-10 h-10 bg-slate-900 border border-slate-800 rounded-full items-center justify-center mr-4"
+          className="w-10 h-10 rounded-full items-center justify-center mr-4 border"
+          style={{ backgroundColor: colors.card, borderColor: colors.border }}
         >
           <ChevronLeft color="#e2e8f0" size={24} />
         </TouchableOpacity>
@@ -87,11 +91,12 @@ export default function WorkoutSetupScreen({ navigation, route }) {
         </TouchableOpacity>
 
         {/* Free Workout */}
-        <TouchableOpacity 
+        <TouchableOpacity
           onPress={startFreeWorkout}
-          className="p-5 rounded-2xl bg-slate-900/55 border border-slate-800 flex-row items-center"
+          className="p-5 rounded-2xl border flex-row items-center"
+          style={{ backgroundColor: colors.card, borderColor: colors.border }}
         >
-          <View className="bg-slate-800 p-3 rounded-xl mr-4">
+          <View className="p-3 rounded-xl mr-4" style={{ backgroundColor: colors.bg }}>
             <Plus size={24} color="#e2e8f0" />
           </View>
           <View className="flex-1">
@@ -107,12 +112,12 @@ export default function WorkoutSetupScreen({ navigation, route }) {
               <Text className="text-slate-400 text-xs uppercase tracking-widest font-bold">Tus Rutinas Guardadas</Text>
             </View>
             <TouchableOpacity onPress={() => navigation.navigate('RoutineManager')}>
-              <Text className="text-blue-500 text-xs font-bold uppercase">Gestionar</Text>
+              <Text className="text-xs font-bold uppercase" style={{ color: colors.accent }}>Gestionar</Text>
             </TouchableOpacity>
           </View>
-          
+
           {routines.length === 0 ? (
-            <View className="p-8 rounded-2xl bg-slate-900 border border-slate-800 items-center justify-center">
+            <View className="p-8 rounded-2xl border items-center justify-center" style={{ backgroundColor: colors.card, borderColor: colors.border }}>
               <Text className="text-slate-400 text-center mb-4">Aún no tienes rutinas guardadas.</Text>
               <TouchableOpacity 
                 onPress={() => navigation.navigate('RoutineManager')}
@@ -127,7 +132,8 @@ export default function WorkoutSetupScreen({ navigation, route }) {
                 <TouchableOpacity 
                   key={r.id} 
                   onPress={() => loadRoutine(r)}
-                  className="p-4 bg-slate-900 border border-slate-800 rounded-2xl flex-row items-center justify-between"
+                  className="p-4 rounded-2xl flex-row items-center justify-between border"
+                  style={{ backgroundColor: colors.card, borderColor: colors.border }}
                 >
                   <View className="flex-row items-center flex-1 pr-4">
                     <View className="bg-purple-500/10 p-2.5 rounded-xl mr-3">

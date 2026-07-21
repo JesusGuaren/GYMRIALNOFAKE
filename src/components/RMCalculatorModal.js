@@ -98,11 +98,11 @@ export default function RMCalculatorModal({ visible, onClose, colors }) {
             </View>
           )}
 
-          <TouchableOpacity 
+          <TouchableOpacity
             onPress={onClose}
             style={[styles.mainButton, { backgroundColor: colors.accent }]}
           >
-            <Text style={styles.mainButtonText}>Cerrar</Text>
+            <Text style={[styles.mainButtonText, { color: colors.accentText }]}>Cerrar</Text>
           </TouchableOpacity>
         </View>
       </View>
@@ -113,7 +113,7 @@ export default function RMCalculatorModal({ visible, onClose, colors }) {
 const styles = StyleSheet.create({
   overlay: {
     flex: 1,
-    justifyContent: 'end',
+    justifyContent: 'flex-end',
     backgroundColor: 'rgba(0,0,0,0.6)',
   },
   container: {

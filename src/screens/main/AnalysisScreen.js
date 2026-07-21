@@ -7,7 +7,7 @@ import useStore, { THEMES } from '../../store/useStore';
 import { calculateVolumeProfile, compareVolumes } from '../../services/VolumeService';
 import { analyzeRoutine } from '../../services/RoutineIntelligence';
 import { getMuscleRecoveryStates } from '../../services/CoachingService';
-import { getRankByWeight, calculate1RM } from '../../lib/rankingSystem';
+import { calculate1RM, getBestRankEver } from '../../lib/rankingSystem';
 import Animated, { FadeIn, FadeInDown, Layout } from 'react-native-reanimated';
 import { normalizeMuscleGroup, translateMuscleGroup } from '../../constants/Muscles';
 import ContextualTooltip from '../../components/common/ContextualTooltip';
@@ -267,6 +267,8 @@ export default function AnalysisScreen({ navigation }) {
   const [useDemoData, setUseDemoData] = useState(false);
   const [helpTopic, setHelpTopic] = useState(null);
 
+  const bestRankEver = useMemo(() => getBestRankEver(workouts), [workouts]);
+
   const stats = useMemo(() => {
     const now = new Date();
     const oneWeekAgo = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
@@ -381,7 +383,7 @@ export default function AnalysisScreen({ navigation }) {
       <Animated.View entering={FadeIn} layout={Layout.springify()} className="gap-y-8">
         {/* High Level Cards */}
         <View className="flex-row gap-x-4">
-          <View className="flex-1 bg-slate-900 border border-emerald-500/20 p-5 rounded-3xl">
+          <View className="flex-1 border border-emerald-500/20 p-5 rounded-3xl" style={{ backgroundColor: colors.card }}>
             <View className="flex-row justify-between items-center mb-3">
               <Activity size={20} color="#10b981" />
               <View className="flex-row items-center gap-x-1">
@@ -399,7 +401,7 @@ export default function AnalysisScreen({ navigation }) {
             <Text className="text-slate-500 text-[10px] font-bold uppercase tracking-widest mt-1">Tonelaje</Text>
           </View>
 
-          <View className="flex-1 bg-slate-900 border border-purple-500/20 p-5 rounded-3xl">
+          <View className="flex-1 border border-purple-500/20 p-5 rounded-3xl" style={{ backgroundColor: colors.card }}>
             <View className="flex-row justify-between items-center mb-3">
               <Award size={20} color="#8b5cf6" />
               <Text className="text-slate-500 text-[10px] font-bold">{useDemoData || isTonnageHistoryEmpty ? 4 : stats.current.sessions} sesiones</Text>
@@ -410,7 +412,7 @@ export default function AnalysisScreen({ navigation }) {
         </View>
 
         {/* Gráfico de Evolución de Tonelaje Semanal */}
-        <View className="bg-slate-900 border border-slate-800 p-5 rounded-[32px]">
+        <View className="p-5 rounded-[32px] border" style={{ backgroundColor: colors.card, borderColor: colors.border }}>
           <View className="flex-row justify-between items-center mb-5">
             <View>
               <View className="flex-row items-center gap-x-1.5">
@@ -421,7 +423,7 @@ export default function AnalysisScreen({ navigation }) {
               </View>
               <Text className="text-slate-500 text-[10px] font-bold">Tonelaje levantado por semana</Text>
             </View>
-            <View className="w-8 h-8 rounded-full bg-slate-950 items-center justify-center border border-slate-850">
+            <View className="w-8 h-8 rounded-full items-center justify-center border" style={{ backgroundColor: colors.bg, borderColor: colors.border }}>
               <TrendingUp size={16} color={colors.accent} />
             </View>
           </View>
@@ -429,7 +431,7 @@ export default function AnalysisScreen({ navigation }) {
         </View>
 
       {/* Elite Coach Insights */}
-      <View className="bg-slate-900/50 border border-slate-800 rounded-3xl p-6">
+      <View className="rounded-3xl p-6 border" style={{ backgroundColor: colors.card, borderColor: colors.border }}>
         <View className="flex-row items-center gap-x-2 mb-6">
           <CheckCircle size={18} color="#10b981" />
           <Text className="text-white font-black text-lg">Virtual Coach Insights</Text>
@@ -464,12 +466,12 @@ export default function AnalysisScreen({ navigation }) {
         </View>
         <View className="flex-row flex-wrap justify-between gap-y-3">
           {Object.entries(stats.recovery).map(([muscle, data]) => (
-            <View key={muscle} style={{ width: '48%' }} className="bg-slate-900 border border-slate-800 p-4 rounded-2xl shadow-sm">
+            <View key={muscle} style={{ width: '48%', backgroundColor: colors.card, borderColor: colors.border }} className="border p-4 rounded-2xl shadow-sm">
               <View className="flex-row justify-between items-center mb-2">
                 <Text className="text-white text-[11px] font-black uppercase">{translateMuscleGroup(muscle)}</Text>
                 <Text style={{ color: data.color }} className="text-[10px] font-black">{data.percent}%</Text>
               </View>
-              <View className="w-full h-1 bg-slate-950 rounded-full overflow-hidden mb-2">
+              <View className="w-full h-1 rounded-full overflow-hidden mb-2" style={{ backgroundColor: colors.bg }}>
                 <View style={{ width: `${data.percent}%`, backgroundColor: data.color }} className="h-full" />
               </View>
               <Text className="text-slate-500 text-[8px] font-bold">
@@ -481,7 +483,7 @@ export default function AnalysisScreen({ navigation }) {
       </View>
 
       {/* Distribution */}
-      <View className="bg-slate-900 border border-slate-800 p-6 rounded-3xl">
+      <View className="p-6 rounded-3xl border" style={{ backgroundColor: colors.card, borderColor: colors.border }}>
         <View className="flex-row items-center gap-x-2 mb-6">
           <Text className="text-white font-black text-lg">Distribución de Series</Text>
           <TouchableOpacity onPress={() => setHelpTopic('volume')}>
@@ -505,7 +507,7 @@ export default function AnalysisScreen({ navigation }) {
                     <Text style={{ color: data.status.color }} className="text-[8px] font-bold uppercase mt-0.5">{data.status.label}</Text>
                   </View>
                 </View>
-                <View className="w-full h-2 bg-slate-950 rounded-full overflow-hidden">
+                <View className="w-full h-2 rounded-full overflow-hidden" style={{ backgroundColor: colors.bg }}>
                   <View style={{ width: `${Math.min((data.sets / 20) * 100, 100)}%`, backgroundColor: data.status.color }} className="h-full" />
                 </View>
               </View>
@@ -520,16 +522,16 @@ export default function AnalysisScreen({ navigation }) {
   const renderHistoricalView = () => (
     <Animated.View entering={FadeIn} layout={Layout.springify()} className="gap-y-8">
       {/* Search Bar */}
-      <View className="bg-slate-900 border border-blue-500/20 p-6 rounded-[32px] relative" style={{ zIndex: 100 }}>
+      <View className="p-6 rounded-[32px] relative border" style={{ zIndex: 100, backgroundColor: colors.card, borderColor: colors.accent + '30' }}>
         <View className="flex-row items-center gap-x-2 mb-4">
           <Text className="text-white font-black text-lg">Progresión Técnica</Text>
           <TouchableOpacity onPress={() => setHelpTopic('tech')}>
             <HelpCircle size={14} color="#64748b" />
           </TouchableOpacity>
         </View>
-        <View className="bg-slate-950 border border-slate-800 rounded-2xl flex-row items-center px-4 mb-2">
+        <View className="rounded-2xl flex-row items-center px-4 mb-2 border" style={{ backgroundColor: colors.bg, borderColor: colors.border }}>
            <Search size={18} color="#64748b" />
-           <TextInput 
+           <TextInput
              value={searchTerm}
              onChangeText={handleSearch}
              placeholder="Busca un ejercicio..."
@@ -538,9 +540,9 @@ export default function AnalysisScreen({ navigation }) {
            />
         </View>
         <Text className="text-slate-500 text-[10px] ml-2">Analiza tu evolución de fuerza y volumen histórico.</Text>
-        
+
         {searchResults.length > 0 && (
-          <View className="absolute top-[110%] left-6 right-6 bg-slate-950 border border-blue-500 rounded-2xl overflow-hidden shadow-2xl z-50">
+          <View className="absolute top-[110%] left-6 right-6 rounded-2xl overflow-hidden shadow-2xl z-50 border" style={{ backgroundColor: colors.bg, borderColor: colors.accent }}>
             {searchResults.map(ex => (
               <TouchableOpacity 
                 key={ex.id}
@@ -549,10 +551,11 @@ export default function AnalysisScreen({ navigation }) {
                   setSearchResults([]);
                   navigation.navigate('ExerciseProgress', { id: ex.id });
                 }}
-                className="p-4 border-b border-slate-900 flex-row justify-between items-center"
+                className="p-4 border-b flex-row justify-between items-center"
+                style={{ borderColor: colors.border }}
               >
                 <Text className="text-white font-bold text-sm">{ex.name}</Text>
-                <ChevronRight size={16} color="#3b82f6" />
+                <ChevronRight size={16} color={colors.accent} />
               </TouchableOpacity>
             ))}
           </View>
@@ -560,28 +563,18 @@ export default function AnalysisScreen({ navigation }) {
       </View>
 
       {/* Global Rank Status */}
-      <View className="bg-slate-900 border border-slate-800 p-6 rounded-[32px] flex-row items-center justify-between">
+      <View className="p-6 rounded-[32px] flex-row items-center justify-between border" style={{ backgroundColor: colors.card, borderColor: colors.border }}>
          <View className="flex-1">
             <Text className="text-slate-500 text-[10px] font-black uppercase tracking-widest mb-1">Estatus Actual</Text>
-            <Text className="text-white font-black text-xl">Rango {(() => {
-               let bestRankRatio = -1;
-               let rank = { name: 'Novato' }; 
-               workouts.forEach(w => w.workout_entries?.forEach(e => {
-                 const rm = calculate1RM(e.weight, e.reps);
-                 const normMg = normalizeMuscleGroup(e.exercises?.muscle_group || 'Arms');
-                 const r = getRankByWeight(rm, normMg, e.exercises?.name || '');
-                 if (r.minRatio > bestRankRatio) { bestRankRatio = r.minRatio; rank = r; }
-               }));
-               return rank.name;
-            })()}</Text>
+            <Text className="text-white font-black text-xl">Rango {bestRankEver.name}</Text>
          </View>
-         <View className="w-12 h-12 rounded-full bg-slate-950 items-center justify-center border border-slate-800">
+         <View className="w-12 h-12 rounded-full items-center justify-center border" style={{ backgroundColor: colors.bg, borderColor: colors.border }}>
             <Trophy size={24} color="#fbbf24" />
          </View>
       </View>
 
       {/* 30 Day Muscle Volume - Donut Chart SVG */}
-      <View className="bg-slate-900 border border-slate-800 p-6 rounded-[32px]">
+      <View className="p-6 rounded-[32px] border" style={{ backgroundColor: colors.card, borderColor: colors.border }}>
          <View className="flex-row justify-between items-center mb-6">
             <View>
                <View className="flex-row items-center gap-x-1.5">
@@ -592,7 +585,7 @@ export default function AnalysisScreen({ navigation }) {
                </View>
                <Text className="text-slate-500 text-[10px] font-bold">Volumen total por músculo (30d)</Text>
             </View>
-            <View className="w-8 h-8 rounded-full bg-slate-950 items-center justify-center border border-slate-850">
+            <View className="w-8 h-8 rounded-full items-center justify-center border" style={{ backgroundColor: colors.bg, borderColor: colors.border }}>
                <BarChart3 size={16} color="#8b5cf6" />
             </View>
          </View>
@@ -602,23 +595,23 @@ export default function AnalysisScreen({ navigation }) {
       </View>
 
       {/* All Time Records Mini List */}
-      <View className="bg-slate-900/50 border border-slate-800 p-6 rounded-[32px]">
+      <View className="p-6 rounded-[32px] border" style={{ backgroundColor: colors.card, borderColor: colors.border }}>
          <Text className="text-white font-black text-base mb-6">Mejores Marcas (PR)</Text>
          <View className="gap-y-4">
            {(() => {
              const bests = {};
-             workouts.forEach(w => w.workout_entries?.forEach(e => {
+             workouts.filter(w => !w.name?.endsWith(String.fromCharCode(0x200B))).forEach(w => w.workout_entries?.forEach(e => {
                const name = e.exercises?.name;
                const rm = calculate1RM(e.weight, e.reps);
                if (!bests[name] || rm > bests[name].rm) bests[name] = { rm, muscle: e.exercises?.muscle_group };
              }));
              return Object.entries(bests).sort((a,b) => b[1].rm - a[1].rm).slice(0, 5).map(([name, data]) => (
-               <View key={name} className="flex-row justify-between items-center bg-slate-950/50 p-3 rounded-2xl">
+               <View key={name} className="flex-row justify-between items-center p-3 rounded-2xl" style={{ backgroundColor: colors.bg }}>
                  <View>
                    <Text className="text-white font-bold text-xs">{name}</Text>
                    <Text className="text-slate-500 text-[8px] uppercase font-black">{translateMuscleGroup(data.muscle)}</Text>
                  </View>
-                 <Text className="text-blue-500 font-black">{data.rm}kg</Text>
+                 <Text style={{ color: colors.accent }} className="font-black">{data.rm}kg</Text>
                </View>
              ));
            })()}
@@ -631,17 +624,19 @@ export default function AnalysisScreen({ navigation }) {
     <View style={{ flex: 1, backgroundColor: colors.bg, paddingTop: insets.top }}>
       {/* Mode Switcher */}
       <View className="px-5 pt-4 pb-2 flex-row gap-x-2">
-         <TouchableOpacity 
+         <TouchableOpacity
            onPress={() => setViewMode('weekly')}
-           className={`flex-1 py-3 rounded-2xl items-center ${viewMode === 'weekly' ? 'bg-blue-600' : 'bg-slate-900'}`}
+           className="flex-1 py-3 rounded-2xl items-center"
+           style={{ backgroundColor: viewMode === 'weekly' ? colors.accent : colors.card }}
          >
-           <Text className={`font-black text-xs ${viewMode === 'weekly' ? 'text-white' : 'text-slate-500'}`}>SEMANAL</Text>
+           <Text style={{ color: viewMode === 'weekly' ? colors.accentText : '#64748b' }} className="font-black text-xs">SEMANAL</Text>
          </TouchableOpacity>
-         <TouchableOpacity 
+         <TouchableOpacity
            onPress={() => setViewMode('historical')}
-           className={`flex-1 py-3 rounded-2xl items-center ${viewMode === 'historical' ? 'bg-purple-600' : 'bg-slate-900'}`}
+           className="flex-1 py-3 rounded-2xl items-center"
+           style={{ backgroundColor: viewMode === 'historical' ? colors.accent : colors.card }}
          >
-           <Text className={`font-black text-xs ${viewMode === 'historical' ? 'text-white' : 'text-slate-500'}`}>HISTÓRICO</Text>
+           <Text style={{ color: viewMode === 'historical' ? colors.accentText : '#64748b' }} className="font-black text-xs">HISTÓRICO</Text>
          </TouchableOpacity>
       </View>
 
@@ -659,26 +654,28 @@ export default function AnalysisScreen({ navigation }) {
         </View>
 
         {workouts.length === 0 && !useDemoData ? (
-          <View className="bg-slate-900/40 border border-slate-800 p-6 rounded-[32px] items-center justify-center py-10 mb-6 mt-4">
-            <View className="w-12 h-12 rounded-full bg-slate-950 items-center justify-center mb-4 border border-slate-850">
-              <TrendingUp size={20} color="#3b82f6" />
+          <View className="p-6 rounded-[32px] items-center justify-center py-10 mb-6 mt-4 border" style={{ backgroundColor: colors.card, borderColor: colors.border }}>
+            <View className="w-12 h-12 rounded-full items-center justify-center mb-4 border" style={{ backgroundColor: colors.bg, borderColor: colors.border }}>
+              <TrendingUp size={20} color={colors.accent} />
             </View>
             <Text className="text-white font-black text-sm text-center">Gráficos y Tendencias Vacíos</Text>
             <Text className="text-slate-400 text-xs text-center mt-1 px-4 leading-relaxed font-medium">
               Necesitamos al menos un entrenamiento registrado para calcular tu volumen muscular, tonelaje acumulado y fatiga.
             </Text>
             <View className="flex-row gap-x-3 mt-6 w-full">
-              <TouchableOpacity 
+              <TouchableOpacity
                 onPress={() => setUseDemoData(true)}
-                className="flex-1 py-3 bg-blue-600/10 border border-blue-500/20 rounded-2xl items-center justify-center"
+                className="flex-1 py-3 rounded-2xl items-center justify-center border"
+                style={{ backgroundColor: colors.accent + '1A', borderColor: colors.accent + '33' }}
               >
-                <Text className="text-blue-400 font-bold text-xs uppercase">Ver Demo</Text>
+                <Text style={{ color: colors.accent }} className="font-bold text-xs uppercase">Ver Demo</Text>
               </TouchableOpacity>
-              <TouchableOpacity 
+              <TouchableOpacity
                 onPress={() => navigation.navigate('WorkoutSetup')}
-                className="flex-1 py-3 bg-blue-600 rounded-2xl items-center justify-center shadow-lg shadow-blue-600/10"
+                className="flex-1 py-3 rounded-2xl items-center justify-center shadow-lg"
+                style={{ backgroundColor: colors.accent }}
               >
-                <Text className="text-white font-bold text-xs uppercase">Comenzar</Text>
+                <Text style={{ color: colors.accentText }} className="font-bold text-xs uppercase">Comenzar</Text>
               </TouchableOpacity>
             </View>
           </View>
@@ -703,8 +700,8 @@ export default function AnalysisScreen({ navigation }) {
                       : 'Toca aquí para previsualizar los espectaculares gráficos con datos de demostración.'}
                   </Text>
                 </View>
-                <View className={`px-3 py-1.5 rounded-xl ${useDemoData ? 'bg-emerald-500' : 'bg-blue-600'}`}>
-                  <Text className="text-white text-[9px] font-black uppercase">
+                <View className="px-3 py-1.5 rounded-xl" style={{ backgroundColor: useDemoData ? '#10b981' : colors.accent }}>
+                  <Text style={{ color: useDemoData ? '#ffffff' : colors.accentText }} className="text-[9px] font-black uppercase">
                     {useDemoData ? 'Ver Vacío' : 'Ver Demo'}
                   </Text>
                 </View>
@@ -728,7 +725,7 @@ export default function AnalysisScreen({ navigation }) {
       {/* Help Modal */}
       <Modal visible={!!helpTopic} transparent animationType="fade">
         <View className="flex-1 bg-black/80 justify-end">
-          <View className="bg-slate-900 border-t border-slate-800 p-6 rounded-t-[32px]">
+          <View className="p-6 rounded-t-[32px] border-t" style={{ backgroundColor: colors.card, borderColor: colors.border }}>
             <View className="items-center mb-6">
               <View className="w-10 h-1 bg-slate-700 rounded-full mb-3" />
               <Text className="text-white text-lg font-black">
@@ -741,7 +738,7 @@ export default function AnalysisScreen({ navigation }) {
               <Text className="text-slate-400 text-xs">Explicación didáctica</Text>
             </View>
 
-            <View className="bg-slate-950 p-5 rounded-2xl border border-slate-850 mb-6">
+            <View className="p-5 rounded-2xl border mb-6" style={{ backgroundColor: colors.bg, borderColor: colors.border }}>
               <Text className="text-slate-300 text-sm leading-relaxed font-medium">
                 {helpTopic === 'tonnage' && 'El tonelaje representa el peso total levantado en tus entrenamientos (Series x Repeticiones x Peso). Es una de las mejores métricas para cuantificar la carga de trabajo acumulada y verificar si estás logrando una sobrecarga progresiva para ganar fuerza e hipertrofia.'}
                 {helpTopic === 'insights' && 'Virtual Coach analiza tus datos en tiempo real para recomendarte días de descanso, advertirte si estás sobreentrenando un grupo muscular (frecuencia/volumen excesivo) o sugerirte enfocar zonas retrasadas.'}
@@ -751,11 +748,12 @@ export default function AnalysisScreen({ navigation }) {
               </Text>
             </View>
 
-            <TouchableOpacity 
-              onPress={() => setHelpTopic(null)} 
-              className="py-4 bg-blue-600 rounded-2xl items-center shadow-lg shadow-blue-600/20"
+            <TouchableOpacity
+              onPress={() => setHelpTopic(null)}
+              className="py-4 rounded-2xl items-center shadow-lg"
+              style={{ backgroundColor: colors.accent }}
             >
-              <Text className="text-white font-bold text-xs uppercase">Entendido</Text>
+              <Text style={{ color: colors.accentText }} className="font-bold text-xs uppercase">Entendido</Text>
             </TouchableOpacity>
           </View>
         </View>

@@ -245,7 +245,7 @@ export default function PlateCalculatorModal({ visible, onClose, totalWeight, ex
             className="w-full py-4 rounded-xl items-center justify-center shadow-lg"
             style={{ backgroundColor: colors.accent }}
           >
-            <Text className="text-white font-extrabold text-sm">Entendido, ¡a levantar! 🏋️‍♂️</Text>
+            <Text style={{ color: colors.accentText }} className="font-extrabold text-sm">Entendido, ¡a levantar! 🏋️‍♂️</Text>
           </TouchableOpacity>
         </View>
       </View>

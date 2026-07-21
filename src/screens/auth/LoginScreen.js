@@ -8,10 +8,13 @@ import * as Linking from 'expo-linking';
 import Svg, { Path } from 'react-native-svg';
 import PreciseInput from '../../components/common/PreciseInput';
 import PreciseButton from '../../components/common/PreciseButton';
+import useStore, { THEMES } from '../../store/useStore';
 
 WebBrowser.maybeCompleteAuthSession();
 
 export default function LoginScreen({ navigation }) {
+  const theme = useStore(state => state.theme);
+  const colors = THEMES[theme] || THEMES.midnight;
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
@@ -85,19 +88,23 @@ export default function LoginScreen({ navigation }) {
   }
 
   return (
-    <KeyboardAvoidingView 
+    <KeyboardAvoidingView
       behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-      className="flex-1 bg-slate-950"
+      className="flex-1"
+      style={{ backgroundColor: colors.bg }}
     >
       <StatusBar style="light" />
       <View className="flex-1 justify-center px-8">
         {/* Header Section */}
         <View className="items-center mb-12">
-          <View className="w-20 h-20 bg-blue-600/20 rounded-full items-center justify-center mb-4 border border-blue-500/30">
-            <Dumbbell size={40} color="#3b82f6" strokeWidth={1.5} />
+          <View
+            className="w-20 h-20 rounded-full items-center justify-center mb-4 border"
+            style={{ backgroundColor: `${colors.accent}33`, borderColor: `${colors.accent}4D` }}
+          >
+            <Dumbbell size={40} color={colors.accent} strokeWidth={1.5} />
           </View>
           <Text className="text-4xl font-extrabold text-white tracking-tight">ELITE</Text>
-          <Text className="text-blue-500 text-lg font-medium tracking-widest mt-1">GYM TRACKER</Text>
+          <Text className="text-lg font-medium tracking-widest mt-1" style={{ color: colors.accent }}>GYM TRACKER</Text>
         </View>
 
         {/* Form Section */}
@@ -128,16 +135,16 @@ export default function LoginScreen({ navigation }) {
           loading={loading}
           className="w-full mt-8"
         >
-          <Text className="text-white text-base font-outfit-bold uppercase">
+          <Text className="text-base font-outfit-bold uppercase" style={{ color: colors.accentText }}>
             {isLogin ? 'Iniciar Sesión' : 'Registrarse'}
           </Text>
         </PreciseButton>
 
         {/* Divider */}
         <View className="flex-row items-center my-6">
-          <View className="flex-1 h-[1px] bg-slate-800" />
+          <View className="flex-1 h-[1px]" style={{ backgroundColor: colors.border }} />
           <Text className="text-slate-500 mx-4 text-xs font-bold uppercase tracking-widest">O</Text>
-          <View className="flex-1 h-[1px] bg-slate-800" />
+          <View className="flex-1 h-[1px]" style={{ backgroundColor: colors.border }} />
         </View>
 
         {/* Google Sign In Button */}
@@ -165,7 +172,7 @@ export default function LoginScreen({ navigation }) {
               {isLogin ? '¿No tienes cuenta? ' : '¿Ya tienes cuenta? '}
             </Text>
             <TouchableOpacity onPress={() => setIsLogin(!isLogin)}>
-              <Text className="text-blue-500 text-base font-bold">
+              <Text className="text-base font-bold" style={{ color: colors.accent }}>
                 {isLogin ? 'Regístrate' : 'Inicia Sesión'}
               </Text>
             </TouchableOpacity>

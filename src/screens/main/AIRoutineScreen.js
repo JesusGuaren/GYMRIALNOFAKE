@@ -103,17 +103,18 @@ export default function AIRoutineScreen({ navigation }) {
   return (
     <View className="flex-1" style={{ backgroundColor: colors.bg }}>
       {/* Header Fijo */}
-      <View 
-        className="flex-row items-center justify-between px-6 pb-4 border-b border-slate-900"
-        style={{ paddingTop: Math.max(insets.top, 20) }}
+      <View
+        className="flex-row items-center justify-between px-6 pb-4 border-b"
+        style={{ paddingTop: Math.max(insets.top, 20), borderColor: colors.border }}
       >
-        <TouchableOpacity 
+        <TouchableOpacity
           onPress={() => {
             if (step > 1 && step < 5) setStep(step - 1);
             else if (step === 5) setStep(4);
             else navigation.goBack();
           }}
-          className="w-10 h-10 bg-slate-900/60 border border-slate-800 rounded-full items-center justify-center"
+          className="w-10 h-10 rounded-full items-center justify-center border"
+          style={{ backgroundColor: colors.card, borderColor: colors.border }}
         >
           <ChevronLeft color="#e2e8f0" size={24} />
         </TouchableOpacity>
@@ -156,8 +157,8 @@ export default function AIRoutineScreen({ navigation }) {
                 <TouchableOpacity
                   key={opt.id}
                   onPress={() => setGoal(opt.id)}
-                  className={`p-5 rounded-2xl border-2 flex-row gap-x-4 items-center ${goal === opt.id ? 'bg-slate-900/90' : 'bg-slate-900/30 border-transparent'}`}
-                  style={{ borderColor: goal === opt.id ? opt.color : 'transparent' }}
+                  className="p-5 rounded-2xl border-2 flex-row gap-x-4 items-center"
+                  style={{ backgroundColor: colors.card, borderColor: goal === opt.id ? opt.color : 'transparent', opacity: goal === opt.id ? 1 : 0.6 }}
                 >
                   <Text className="text-3xl">{opt.icon}</Text>
                   <View className="flex-1">
@@ -180,9 +181,10 @@ export default function AIRoutineScreen({ navigation }) {
                   <TouchableOpacity
                     key={lvl.id}
                     onPress={() => setLevel(lvl.id)}
-                    className={`flex-1 py-4 rounded-xl border items-center justify-center ${level === lvl.id ? 'bg-blue-600 border-blue-500' : 'bg-slate-900/60 border-slate-800'}`}
+                    className="flex-1 py-4 rounded-xl border items-center justify-center"
+                    style={level === lvl.id ? { backgroundColor: colors.accent, borderColor: colors.accent } : { backgroundColor: colors.card, borderColor: colors.border }}
                   >
-                    <Text className={`text-[10px] font-black tracking-wider ${level === lvl.id ? 'text-white' : 'text-slate-400'}`}>
+                    <Text className="text-[10px] font-black tracking-wider" style={{ color: level === lvl.id ? colors.accentText : '#94a3b8' }}>
                       {lvl.name}
                     </Text>
                   </TouchableOpacity>
@@ -204,8 +206,8 @@ export default function AIRoutineScreen({ navigation }) {
                 <TouchableOpacity
                   key={num}
                   onPress={() => setDaysPerWeek(num)}
-                  className={`flex-1 min-w-[70px] p-5 rounded-2xl border-2 items-center justify-center ${daysPerWeek === num ? 'bg-slate-900' : 'bg-slate-900/30 border-transparent'}`}
-                  style={{ borderColor: daysPerWeek === num ? colors.accent : 'transparent' }}
+                  className="flex-1 min-w-[70px] p-5 rounded-2xl border-2 items-center justify-center"
+                  style={{ backgroundColor: colors.card, borderColor: daysPerWeek === num ? colors.accent : 'transparent', opacity: daysPerWeek === num ? 1 : 0.6 }}
                 >
                   <Text className="text-white text-2xl font-black mb-0.5">{num}</Text>
                   <Text className="text-slate-500 text-[9px] uppercase font-black tracking-wider">Días</Text>
@@ -214,7 +216,7 @@ export default function AIRoutineScreen({ navigation }) {
             </View>
 
             {/* Split Preview */}
-            <View className="p-5 rounded-2xl bg-slate-900/50 border border-slate-800/80 mt-4 flex-row items-center gap-x-4">
+            <View className="p-5 rounded-2xl border mt-4 flex-row items-center gap-x-4" style={{ backgroundColor: colors.card, borderColor: colors.border }}>
               <View className="w-12 h-12 rounded-xl bg-purple-500/10 items-center justify-center border border-purple-500/20">
                 <Calendar color="#a855f7" size={24} />
               </View>
@@ -255,14 +257,15 @@ export default function AIRoutineScreen({ navigation }) {
                   <TouchableOpacity
                     key={eq.id}
                     onPress={() => toggleEquipment(eq.id)}
-                    className={`p-4 rounded-xl border flex-row justify-between items-center ${active ? 'bg-slate-900 border-blue-500' : 'bg-slate-900/30 border-slate-800'}`}
+                    className="p-4 rounded-xl border flex-row justify-between items-center"
+                    style={active ? { backgroundColor: colors.card, borderColor: colors.accent } : { backgroundColor: colors.card, borderColor: colors.border, opacity: 0.6 }}
                   >
                     <View className="flex-row items-center gap-x-3">
                       <Text className="text-xl">{eq.icon}</Text>
                       <Text className="text-white font-bold text-sm">{eq.name}</Text>
                     </View>
-                    <View className={`w-6 h-6 rounded-full border items-center justify-center ${active ? 'bg-blue-500 border-blue-400' : 'border-slate-700'}`}>
-                      {active && <Text className="text-[10px] font-black text-white font-medium">✓</Text>}
+                    <View className="w-6 h-6 rounded-full border items-center justify-center" style={active ? { backgroundColor: colors.accent, borderColor: colors.accent } : { borderColor: '#334155' }}>
+                      {active && <Text style={{ color: colors.accentText }} className="text-[10px] font-black font-medium">✓</Text>}
                     </View>
                   </TouchableOpacity>
                 );
@@ -286,8 +289,10 @@ export default function AIRoutineScreen({ navigation }) {
                   <TouchableOpacity
                     key={muscle}
                     onPress={() => toggleMuscleFocus(muscle)}
-                    className={`p-3 rounded-2xl border-2 items-center justify-center ${isSelected ? 'bg-slate-900' : 'bg-slate-900/30 border-transparent'}`}
-                    style={{ 
+                    className="p-3 rounded-2xl border-2 items-center justify-center"
+                    style={{
+                      backgroundColor: colors.card,
+                      opacity: isSelected ? 1 : 0.6,
                       borderColor: isSelected ? '#a855f7' : 'transparent',
                       width: '47%', // 2 columnas perfectas con espacio entre ellas
                       aspectRatio: 1.15
@@ -315,7 +320,7 @@ export default function AIRoutineScreen({ navigation }) {
 
         {step === 5 && generatedProgram && (
           <Animated.View entering={SlideInRight} className="gap-y-6">
-            <View className="p-6 rounded-3xl bg-slate-900 border border-slate-800">
+            <View className="p-6 rounded-3xl border" style={{ backgroundColor: colors.card, borderColor: colors.border }}>
               <Sparkles color="#a855f7" size={32} className="mb-4" />
               <Text className="text-white text-2xl font-black mb-2">{generatedProgram.name}</Text>
               <Text className="text-slate-400 text-xs leading-relaxed font-medium">{generatedProgram.description}</Text>
@@ -325,8 +330,8 @@ export default function AIRoutineScreen({ navigation }) {
 
             <View className="gap-y-4">
               {generatedProgram.days.map((day, idx) => (
-                <View key={idx} className="p-5 rounded-2xl bg-slate-900/50 border border-slate-800/80">
-                  <Text className="text-white font-extrabold text-base mb-3 border-b border-slate-800 pb-2">{day.name}</Text>
+                <View key={idx} className="p-5 rounded-2xl border" style={{ backgroundColor: colors.card, borderColor: colors.border }}>
+                  <Text className="text-white font-extrabold text-base mb-3 border-b pb-2" style={{ borderColor: colors.border }}>{day.name}</Text>
                   <View className="gap-y-4">
                     {day.exercises.map((ex, exIdx) => (
                       <View key={exIdx} className="flex-row justify-between items-start">
@@ -352,9 +357,11 @@ export default function AIRoutineScreen({ navigation }) {
         Barra Fija Inferior con Botones de Acción.
         Poblado con un generoso padding bottom y zIndex elevado.
       */}
-      <View 
-        className="px-6 pb-6 pt-4 bg-slate-950 border-t border-slate-900 flex-row gap-x-4 justify-between absolute bottom-0 left-0 right-0"
-        style={{ 
+      <View
+        className="px-6 pb-6 pt-4 border-t flex-row gap-x-4 justify-between absolute bottom-0 left-0 right-0"
+        style={{
+          backgroundColor: colors.bg,
+          borderColor: colors.border,
           paddingBottom: Platform.OS === 'ios' ? Math.max(insets.bottom, 24) : Math.max(insets.bottom + 16, 24),
           height: Platform.OS === 'ios' ? 90 + insets.bottom : 90 + insets.bottom,
           zIndex: 100
@@ -365,7 +372,8 @@ export default function AIRoutineScreen({ navigation }) {
             {step > 1 && (
               <TouchableOpacity
                 onPress={() => setStep(step - 1)}
-                className="flex-1 py-4 bg-slate-900 rounded-xl items-center justify-center border border-slate-800"
+                className="flex-1 py-4 rounded-xl items-center justify-center border"
+                style={{ backgroundColor: colors.card, borderColor: colors.border }}
               >
                 <Text className="text-slate-300 font-bold">Atrás</Text>
               </TouchableOpacity>
@@ -384,13 +392,13 @@ export default function AIRoutineScreen({ navigation }) {
               style={{ backgroundColor: colors.accent, shadowColor: colors.accent, flex: step === 1 ? 1 : 2 }}
             >
               {isGenerating ? (
-                <ActivityIndicator color="white" size="small" />
+                <ActivityIndicator color={colors.accentText} size="small" />
               ) : (
                 <>
-                  <Text className="text-white font-extrabold">
+                  <Text style={{ color: colors.accentText }} className="font-extrabold">
                     {step === 4 ? 'Generar Rutina 🧠' : 'Siguiente'}
                   </Text>
-                  <ChevronRight color="white" size={16} />
+                  <ChevronRight color={colors.accentText} size={16} />
                 </>
               )}
             </TouchableOpacity>
@@ -399,7 +407,8 @@ export default function AIRoutineScreen({ navigation }) {
           <>
             <TouchableOpacity
               onPress={() => setStep(1)}
-              className="flex-1 py-4 bg-slate-900 rounded-xl items-center justify-center border border-slate-800"
+              className="flex-1 py-4 rounded-xl items-center justify-center border"
+              style={{ backgroundColor: colors.card, borderColor: colors.border }}
             >
               <Text className="text-slate-300 font-bold">Reconfigurar</Text>
             </TouchableOpacity>

@@ -3,6 +3,7 @@ import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { LayoutDashboard, BookOpen, Calendar, TrendingUp } from 'lucide-react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import useStore, { THEMES } from '../store/useStore';
 
 // Screens
 import LoginScreen from '../screens/auth/LoginScreen';
@@ -21,27 +22,29 @@ import ExerciseProgressScreen from '../screens/main/ExerciseProgressScreen';
 import CalendarScreen from '../screens/main/CalendarScreen';
 import RoutineManagerScreen from '../screens/main/RoutineManagerScreen';
 import RoutineEditScreen from '../screens/main/RoutineEditScreen';
+import ProgramManagerScreen from '../screens/main/ProgramManagerScreen';
 
 const Tab = createBottomTabNavigator();
 const Stack = createNativeStackNavigator();
 
 import AIRoutineScreen from '../screens/main/AIRoutineScreen';
 import CoachScreen from '../screens/main/CoachScreen';
-import useStore from '../store/useStore';
 
 function TabNavigator() {
   const insets = useSafeAreaInsets();
+  const theme = useStore(state => state.theme);
+  const colors = THEMES[theme] || THEMES.midnight;
   return (
     <Tab.Navigator
       screenOptions={{
         headerShown: false,
         tabBarStyle: {
-          backgroundColor: '#0f172a',
-          borderTopColor: '#1e293b',
+          backgroundColor: colors.card,
+          borderTopColor: colors.border,
           height: 60 + (insets.bottom > 0 ? insets.bottom - 4 : 0),
           paddingBottom: insets.bottom > 0 ? insets.bottom : 8,
         },
-        tabBarActiveTintColor: '#3b82f6',
+        tabBarActiveTintColor: colors.accent,
         tabBarInactiveTintColor: '#64748b',
       }}
     >
@@ -79,12 +82,14 @@ function TabNavigator() {
 
 export default function AppNavigator({ user }) {
   const isResettingPassword = useStore(state => state.isResettingPassword);
+  const theme = useStore(state => state.theme);
+  const colors = THEMES[theme] || THEMES.midnight;
 
   return (
     <Stack.Navigator
       screenOptions={{
         headerShown: false,
-        contentStyle: { backgroundColor: '#020617' },
+        contentStyle: { backgroundColor: colors.bg },
       }}
     >
       {!user ? (
@@ -107,6 +112,7 @@ export default function AppNavigator({ user }) {
           <Stack.Screen name="AIRoutine" component={AIRoutineScreen} />
           <Stack.Screen name="RoutineManager" component={RoutineManagerScreen} />
           <Stack.Screen name="RoutineEdit" component={RoutineEditScreen} />
+          <Stack.Screen name="ProgramManager" component={ProgramManagerScreen} />
           <Stack.Screen 
             name="Coach" 
             component={CoachScreen} 

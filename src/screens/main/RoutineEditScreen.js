@@ -159,24 +159,26 @@ export default function RoutineEditScreen({ navigation, route }) {
   return (
     <View className="flex-1" style={{ backgroundColor: colors.bg, paddingTop: insets.top }}>
       {/* Header */}
-      <View className="px-6 py-4 border-b border-slate-900 flex-row justify-between items-center">
-        <TouchableOpacity 
+      <View className="px-6 py-4 border-b flex-row justify-between items-center" style={{ borderColor: colors.border }}>
+        <TouchableOpacity
           onPress={handleCancel}
-          className="px-4 py-2 border border-slate-800 rounded-xl"
+          className="px-4 py-2 border rounded-xl"
+          style={{ borderColor: colors.border }}
         >
           <Text className="text-slate-400 font-bold text-xs uppercase">Cancelar</Text>
         </TouchableOpacity>
-        
+
         <Text className="text-white text-lg font-black">
           {isEditMode ? 'Editar Rutina' : 'Crear Rutina'}
         </Text>
 
-        <TouchableOpacity 
+        <TouchableOpacity
           onPress={handleSave}
-          className="px-4 py-2 bg-blue-600 rounded-xl flex-row items-center gap-x-1"
+          className="px-4 py-2 rounded-xl flex-row items-center gap-x-1"
+          style={{ backgroundColor: colors.accent }}
         >
-          <Save size={14} color="white" />
-          <Text className="text-white font-bold text-xs uppercase">Guardar</Text>
+          <Save size={14} color={colors.accentText} />
+          <Text style={{ color: colors.accentText }} className="font-bold text-xs uppercase">Guardar</Text>
         </TouchableOpacity>
       </View>
 
@@ -190,10 +192,11 @@ export default function RoutineEditScreen({ navigation, route }) {
               onChangeText={(val) => handleFieldChange(setName, val)}
               placeholder="Ej. Día de Empuje"
               placeholderTextColor="#475569"
-              className="h-14 bg-slate-900 border border-slate-800 rounded-2xl px-4 text-white font-bold text-base focus:border-blue-500"
+              className="h-14 border rounded-2xl px-4 text-white font-bold text-base"
+              style={{ backgroundColor: colors.card, borderColor: colors.border }}
             />
           </View>
-          
+
           <View>
             <Text className="text-slate-500 text-[10px] uppercase font-bold tracking-widest mb-2">Descripción</Text>
             <TextInput
@@ -201,7 +204,8 @@ export default function RoutineEditScreen({ navigation, route }) {
               onChangeText={(val) => handleFieldChange(setDescription, val)}
               placeholder="Ej. Enfoque en pectoral superior y tríceps"
               placeholderTextColor="#475569"
-              className="h-14 bg-slate-900 border border-slate-800 rounded-2xl px-4 text-white text-sm focus:border-blue-500"
+              className="h-14 border rounded-2xl px-4 text-white text-sm"
+              style={{ backgroundColor: colors.card, borderColor: colors.border }}
             />
           </View>
         </View>
@@ -209,21 +213,22 @@ export default function RoutineEditScreen({ navigation, route }) {
         {/* Exercises List */}
         <View className="mb-6">
           <View className="flex-row justify-between items-center mb-4">
-            <Text className="text-blue-500 text-xs font-black uppercase tracking-widest">Ejercicios seleccionados</Text>
+            <Text style={{ color: colors.accent }} className="text-xs font-black uppercase tracking-widest">Ejercicios seleccionados</Text>
             <Text className="text-slate-500 text-xs font-bold">{exercises.length} en lista</Text>
           </View>
 
           {exercises.length === 0 ? (
-            <View className="bg-slate-900/30 p-8 rounded-3xl border border-dashed border-slate-800 items-center justify-center py-12">
+            <View className="p-8 rounded-3xl border border-dashed items-center justify-center py-12" style={{ backgroundColor: colors.card, borderColor: colors.border }}>
               <Dumbbell size={32} color="#475569" />
               <Text className="text-slate-500 text-xs text-center mt-3">No has seleccionado ejercicios aún.</Text>
             </View>
           ) : (
             <View className="gap-y-4">
               {exercises.map((ex, idx) => (
-                <View 
+                <View
                   key={ex.id}
-                  className="bg-slate-900/50 border border-slate-800 p-4 rounded-2xl"
+                  className="border p-4 rounded-2xl"
+                  style={{ backgroundColor: colors.card, borderColor: colors.border }}
                 >
                   <View className="flex-row justify-between items-center mb-3">
                     <View className="flex-1 pr-4">
@@ -235,21 +240,23 @@ export default function RoutineEditScreen({ navigation, route }) {
 
                     {/* Reordenar / Eliminar */}
                     <View className="flex-row gap-x-2 items-center">
-                      <TouchableOpacity 
+                      <TouchableOpacity
                         onPress={() => moveExercise(idx, 'up')}
                         disabled={idx === 0}
-                        className={`w-7 h-7 rounded bg-slate-950 items-center justify-center border border-slate-800 ${idx === 0 ? 'opacity-30' : ''}`}
+                        className="w-7 h-7 rounded items-center justify-center border"
+                        style={{ backgroundColor: colors.bg, borderColor: colors.border, opacity: idx === 0 ? 0.3 : 1 }}
                       >
                         <ArrowUp size={12} color="#94a3b8" />
                       </TouchableOpacity>
-                      <TouchableOpacity 
+                      <TouchableOpacity
                         onPress={() => moveExercise(idx, 'down')}
                         disabled={idx === exercises.length - 1}
-                        className={`w-7 h-7 rounded bg-slate-950 items-center justify-center border border-slate-800 ${idx === exercises.length - 1 ? 'opacity-30' : ''}`}
+                        className="w-7 h-7 rounded items-center justify-center border"
+                        style={{ backgroundColor: colors.bg, borderColor: colors.border, opacity: idx === exercises.length - 1 ? 0.3 : 1 }}
                       >
                         <ArrowDown size={12} color="#94a3b8" />
                       </TouchableOpacity>
-                      <TouchableOpacity 
+                      <TouchableOpacity
                         onPress={() => handleRemoveExercise(idx)}
                         className="w-7 h-7 rounded bg-red-950/20 items-center justify-center border border-red-900/10"
                       >
@@ -266,7 +273,8 @@ export default function RoutineEditScreen({ navigation, route }) {
                         value={String(ex.default_sets)}
                         onChangeText={(val) => updateExerciseParam(idx, 'default_sets', val)}
                         keyboardType="numeric"
-                        className="h-10 bg-slate-950 rounded-xl text-center text-white font-bold"
+                        className="h-10 rounded-xl text-center text-white font-bold"
+                        style={{ backgroundColor: colors.bg }}
                       />
                     </View>
                     <View className="flex-1">
@@ -275,7 +283,8 @@ export default function RoutineEditScreen({ navigation, route }) {
                         value={String(ex.default_reps)}
                         onChangeText={(val) => updateExerciseParam(idx, 'default_reps', val)}
                         keyboardType="numeric"
-                        className="h-10 bg-slate-950 rounded-xl text-center text-white font-bold"
+                        className="h-10 rounded-xl text-center text-white font-bold"
+                        style={{ backgroundColor: colors.bg }}
                       />
                     </View>
                   </View>
@@ -285,53 +294,55 @@ export default function RoutineEditScreen({ navigation, route }) {
           )}
 
           {/* Add Exercise CTA */}
-          <TouchableOpacity 
+          <TouchableOpacity
             onPress={() => setShowSelector(true)}
-            className="mt-6 py-4 rounded-2xl border border-dashed border-blue-600/30 bg-blue-600/5 flex-row justify-center items-center gap-x-2"
+            className="mt-6 py-4 rounded-2xl border border-dashed flex-row justify-center items-center gap-x-2"
+            style={{ borderColor: colors.accent + '4D', backgroundColor: colors.accent + '0D' }}
           >
-            <Plus size={16} color="#3b82f6" strokeWidth={2.5} />
-            <Text className="text-blue-500 font-bold text-xs uppercase tracking-wider">Añadir Ejercicio</Text>
+            <Plus size={16} color={colors.accent} strokeWidth={2.5} />
+            <Text style={{ color: colors.accent }} className="font-bold text-xs uppercase tracking-wider">Añadir Ejercicio</Text>
           </TouchableOpacity>
         </View>
       </ScrollView>
 
       {/* Exercise Selector Modal */}
       <Modal visible={showSelector} animationType="slide" transparent>
-        <View className="flex-1 bg-slate-950" style={{ paddingTop: insets.top }}>
-          <View className="px-5 py-6 border-b border-slate-900 flex-row justify-between items-center">
+        <View className="flex-1" style={{ paddingTop: insets.top, backgroundColor: colors.bg }}>
+          <View className="px-5 py-6 border-b flex-row justify-between items-center" style={{ borderColor: colors.border }}>
             <Text className="text-white text-2xl font-black">Seleccionar Ejercicio</Text>
-            <TouchableOpacity onPress={() => setShowSelector(false)} className="bg-slate-900 p-2 rounded-full">
+            <TouchableOpacity onPress={() => setShowSelector(false)} className="p-2 rounded-full" style={{ backgroundColor: colors.card }}>
               <X size={24} color="#64748b" />
             </TouchableOpacity>
           </View>
           <View className="px-5 py-4">
-            <View className="bg-slate-900 rounded-2xl px-4 flex-row items-center border border-slate-800">
-              <TextInput 
-                value={searchTerm} 
-                onChangeText={setSearchTerm} 
-                placeholder="Buscar por ejercicio o músculo..." 
-                placeholderTextColor="#64748b" 
-                className="flex-1 h-12 text-white font-bold" 
+            <View className="rounded-2xl px-4 flex-row items-center border" style={{ backgroundColor: colors.card, borderColor: colors.border }}>
+              <TextInput
+                value={searchTerm}
+                onChangeText={setSearchTerm}
+                placeholder="Buscar por ejercicio o músculo..."
+                placeholderTextColor="#64748b"
+                className="flex-1 h-12 text-white font-bold"
               />
             </View>
           </View>
           <ScrollView className="flex-1 px-5">
             <View className="flex-row flex-wrap justify-between">
               {filteredExercises.map(ex => (
-                <TouchableOpacity 
-                  key={ex.id} 
-                  onPress={() => handleSelectExercise(ex)} 
-                  className="w-[48%] h-32 bg-slate-900 border border-slate-800 rounded-2xl mb-4 overflow-hidden relative"
+                <TouchableOpacity
+                  key={ex.id}
+                  onPress={() => handleSelectExercise(ex)}
+                  className="w-[48%] h-32 border rounded-2xl mb-4 overflow-hidden relative"
+                  style={{ backgroundColor: colors.card, borderColor: colors.border }}
                 >
-                  <Image 
-                    source={MUSCLE_IMAGES[ex.muscle_group] || { uri: 'https://images.unsplash.com/photo-1534438327276-14e5300c3a48?q=80&w=200&auto=format&fit=crop' }} 
-                    className="absolute inset-0 w-full h-full opacity-35" 
-                    resizeMode="cover" 
+                  <Image
+                    source={MUSCLE_IMAGES[ex.muscle_group] || { uri: 'https://images.unsplash.com/photo-1534438327276-14e5300c3a48?q=80&w=200&auto=format&fit=crop' }}
+                    className="absolute inset-0 w-full h-full opacity-35"
+                    resizeMode="cover"
                   />
-                  <View className="absolute inset-0 bg-slate-950/20" />
+                  <View className="absolute inset-0" style={{ backgroundColor: colors.bg + '33' }} />
                   <View className="p-4 justify-between h-full">
-                    <View className="bg-blue-600 self-start px-2 py-0.5 rounded-md">
-                      <Text className="text-[8px] text-white font-black uppercase">{ex.muscle_group}</Text>
+                    <View className="self-start px-2 py-0.5 rounded-md" style={{ backgroundColor: colors.accent }}>
+                      <Text style={{ color: colors.accentText }} className="text-[8px] font-black uppercase">{ex.muscle_group}</Text>
                     </View>
                     <Text className="text-white font-bold text-xs" numberOfLines={2}>{ex.name}</Text>
                   </View>

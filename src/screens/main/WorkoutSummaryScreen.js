@@ -88,16 +88,16 @@ export default function WorkoutSummaryScreen({ route, navigation }) {
       <ScrollView className="flex-1" contentContainerStyle={{ padding: 20, paddingTop: insets.top + 20, paddingBottom: 40, alignItems: 'center' }}>
         
         <Animated.View entering={BounceIn.delay(200)} className="mb-10 items-center">
-          <View className="w-24 h-24 rounded-full bg-blue-500/10 border-2 border-blue-500 items-center justify-center mb-6 shadow-2xl shadow-blue-500/50">
-            {prDetected ? <Trophy size={48} color="#3b82f6" /> : <Flame size={48} color="#eab308" />}
+          <View className="w-24 h-24 rounded-full border-2 items-center justify-center mb-6 shadow-2xl" style={{ backgroundColor: colors.accent + '1A', borderColor: colors.accent, shadowColor: colors.accent }}>
+            {prDetected ? <Trophy size={48} color={colors.accent} /> : <Flame size={48} color="#eab308" />}
           </View>
           <Text className="text-white text-3xl font-black text-center mb-2">¡Entrenamiento Completado!</Text>
           <Text className="text-slate-400 text-base">{workoutName}</Text>
         </Animated.View>
 
         <View className="flex-row gap-x-4 mb-10 w-full max-w-sm">
-          <View className="flex-1 bg-slate-900 border-t-2 border-blue-500 rounded-2xl p-5 items-center">
-            <Dumbbell size={24} color="#3b82f6" className="mb-3" />
+          <View className="flex-1 rounded-2xl p-5 items-center" style={{ backgroundColor: colors.card, borderTopWidth: 2, borderTopColor: colors.accent }}>
+            <Dumbbell size={24} color={colors.accent} className="mb-3" />
             <Text className="text-slate-500 text-[10px] uppercase font-bold tracking-widest mb-1">Volumen Total</Text>
             <View className="flex-row items-baseline">
               <Text className="text-white text-2xl font-black">{volume.toLocaleString()}</Text>
@@ -105,7 +105,7 @@ export default function WorkoutSummaryScreen({ route, navigation }) {
             </View>
           </View>
 
-          <View className="flex-1 bg-slate-900 border-t-2 border-emerald-500 rounded-2xl p-5 items-center">
+          <View className="flex-1 border-t-2 border-emerald-500 rounded-2xl p-5 items-center" style={{ backgroundColor: colors.card }}>
             <Sparkles size={24} color="#10b981" className="mb-3" />
             <Text className="text-slate-500 text-[10px] uppercase font-bold tracking-widest mb-1">Series Totales</Text>
             <Text className="text-white text-2xl font-black">{flatEntries.length}</Text>
@@ -125,34 +125,37 @@ export default function WorkoutSummaryScreen({ route, navigation }) {
         )}
 
         <View className="w-full max-w-sm gap-y-4">
-          <TouchableOpacity 
+          <TouchableOpacity
             onPress={handleShare}
-            className="w-full bg-slate-900 border border-slate-800 p-5 rounded-2xl flex-row justify-center items-center gap-x-3"
+            className="w-full border p-5 rounded-2xl flex-row justify-center items-center gap-x-3"
+            style={{ backgroundColor: colors.card, borderColor: colors.border }}
           >
             <Share2 size={20} color="white" />
             <Text className="text-white font-bold text-base">Compartir Logro</Text>
           </TouchableOpacity>
 
           {!isSavedAsRoutine ? (
-            <TouchableOpacity 
+            <TouchableOpacity
               onPress={handleSaveAsRoutine}
-              className="w-full bg-slate-900 border border-blue-500/50 p-5 rounded-2xl flex-row justify-center items-center gap-x-3"
+              className="w-full border p-5 rounded-2xl flex-row justify-center items-center gap-x-3"
+              style={{ backgroundColor: colors.card, borderColor: colors.accent + '80' }}
             >
-              <BookOpen size={20} color="#3b82f6" />
-              <Text className="text-blue-500 font-bold text-base">Guardar como Rutina</Text>
+              <BookOpen size={20} color={colors.accent} />
+              <Text style={{ color: colors.accent }} className="font-bold text-base">Guardar como Rutina</Text>
             </TouchableOpacity>
           ) : (
             <View className="w-full p-4 items-center">
-              <Text className="text-blue-500 font-bold">✅ ¡Añadida a tu Bitácora!</Text>
+              <Text style={{ color: colors.accent }} className="font-bold">✅ ¡Añadida a tu Bitácora!</Text>
             </View>
           )}
 
-          <TouchableOpacity 
+          <TouchableOpacity
             onPress={() => navigation.replace('MainTabs')}
-            className="w-full bg-blue-600 p-5 rounded-2xl flex-row justify-center items-center gap-x-2 shadow-lg shadow-blue-600/30 mt-4"
+            className="w-full p-5 rounded-2xl flex-row justify-center items-center gap-x-2 shadow-lg mt-4"
+            style={{ backgroundColor: colors.accent, shadowColor: colors.accent }}
           >
-            <Text className="text-white font-bold text-lg text-center">Volver al Inicio</Text>
-            <ChevronRight size={24} color="white" />
+            <Text style={{ color: colors.accentText }} className="font-bold text-lg text-center">Volver al Inicio</Text>
+            <ChevronRight size={24} color={colors.accentText} />
           </TouchableOpacity>
         </View>
 

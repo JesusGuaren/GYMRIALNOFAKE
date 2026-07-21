@@ -183,12 +183,12 @@ export default function AchievementUnlockModal({ visible, achievements = [], onC
               ))}
             </View>
 
-            <TouchableOpacity 
+            <TouchableOpacity
               onPress={onClose}
               className="w-full h-14 rounded-2xl items-center justify-center mt-4 shadow-lg"
               style={{ backgroundColor: colors.accent }}
             >
-              <Text className="text-white font-extrabold text-base tracking-wider">¡BRUTAL, MANO!</Text>
+              <Text style={{ color: colors.accentText }} className="font-extrabold text-base tracking-wider">¡BRUTAL, MANO!</Text>
             </TouchableOpacity>
           </Animated.View>
         </Animated.View>

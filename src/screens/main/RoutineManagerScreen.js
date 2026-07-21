@@ -1,9 +1,25 @@
 import React, { useState } from 'react';
-import { View, Text, TouchableOpacity, ScrollView, Alert } from 'react-native';
-import { ChevronLeft, Plus, Trash2, Edit2, Play, Info, Sparkles, AlertTriangle } from 'lucide-react-native';
+import { View, Text, TouchableOpacity, ScrollView, Alert, Modal } from 'react-native';
+import { ChevronLeft, Plus, Trash2, Edit2, Play, Info, Sparkles, AlertTriangle, Layers } from 'lucide-react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import useStore, { THEMES } from '../../store/useStore';
 import * as Haptics from 'expo-haptics';
+import { normalizeMuscleGroup, translateMuscleGroup, SUB_TO_PRIMARY_MAPPING } from '../../constants/Muscles';
+
+// Si la rutina no tiene descripción propia, arma un resumen corto a partir
+// de los grupos musculares que cubre, en vez de mostrar un placeholder vacío.
+const getRoutineSummary = (routine) => {
+  if (routine.description) return routine.description;
+  const muscles = new Set();
+  routine.routine_exercises?.forEach(re => {
+    const mg = re.exercises?.muscle_group;
+    if (!mg) return;
+    const norm = normalizeMuscleGroup(mg);
+    if (norm === 'UNKNOWN') return;
+    muscles.add(translateMuscleGroup(SUB_TO_PRIMARY_MAPPING[norm] || norm));
+  });
+  return muscles.size > 0 ? Array.from(muscles).slice(0, 3).join(', ') : null;
+};
 
 const DEFAULT_TEMPLATES = [
   { 
@@ -40,6 +56,7 @@ export default function RoutineManagerScreen({ navigation }) {
   const insets = useSafeAreaInsets();
   const { theme, routines, deleteRoutine } = useStore();
   const colors = THEMES[theme] || THEMES.midnight;
+  const [showTemplateInfo, setShowTemplateInfo] = useState(null);
 
   const handleStartTraining = (routine) => {
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
@@ -87,11 +104,12 @@ export default function RoutineManagerScreen({ navigation }) {
   return (
     <View className="flex-1" style={{ backgroundColor: colors.bg, paddingTop: insets.top }}>
       {/* Header */}
-      <View className="px-6 py-4 border-b border-slate-900 flex-row justify-between items-center">
+      <View className="px-6 py-4 border-b flex-row justify-between items-center" style={{ borderColor: colors.border }}>
         <View className="flex-row items-center">
-          <TouchableOpacity 
+          <TouchableOpacity
             onPress={() => navigation.goBack()}
-            className="w-10 h-10 bg-slate-900 border border-slate-800 rounded-full items-center justify-center mr-4"
+            className="w-10 h-10 rounded-full items-center justify-center mr-4 border"
+            style={{ backgroundColor: colors.card, borderColor: colors.border }}
           >
             <ChevronLeft color="#e2e8f0" size={24} />
           </TouchableOpacity>
@@ -100,66 +118,81 @@ export default function RoutineManagerScreen({ navigation }) {
             <Text className="text-slate-500 text-xs">Crea, edita y organiza tus entrenamientos</Text>
           </View>
         </View>
-        <TouchableOpacity 
-          onPress={handleCreateRoutine}
-          className="w-10 h-10 bg-blue-600 rounded-full items-center justify-center shadow-lg shadow-blue-600/30"
-        >
-          <Plus color="white" size={20} strokeWidth={3} />
-        </TouchableOpacity>
+        <View className="flex-row gap-x-2">
+          <TouchableOpacity
+            onPress={() => navigation.navigate('ProgramManager')}
+            className="w-10 h-10 rounded-full items-center justify-center border"
+            style={{ backgroundColor: colors.card, borderColor: colors.border }}
+          >
+            <Layers color={colors.accent} size={18} />
+          </TouchableOpacity>
+          <TouchableOpacity
+            onPress={handleCreateRoutine}
+            className="w-10 h-10 rounded-full items-center justify-center shadow-lg"
+            style={{ backgroundColor: colors.accent }}
+          >
+            <Plus color={colors.accentText} size={20} strokeWidth={3} />
+          </TouchableOpacity>
+        </View>
       </View>
 
       <ScrollView className="flex-1 px-6 pt-6" contentContainerStyle={{ paddingBottom: 100 }}>
         {/* Custom Routines */}
         <View className="mb-8">
           <View className="flex-row justify-between items-center mb-4">
-            <Text className="text-blue-500 text-xs font-black uppercase tracking-widest">Mis Rutinas</Text>
+            <Text style={{ color: colors.accent }} className="text-xs font-black uppercase tracking-widest">Mis Rutinas</Text>
             <Text className="text-slate-500 text-xs font-bold">{routines.length} Creadas</Text>
           </View>
 
           {routines.length === 0 ? (
-            <View className="bg-slate-900/40 p-8 rounded-3xl border border-dashed border-slate-800 items-center justify-center py-10">
-              <View className="w-14 h-14 rounded-full bg-slate-950 items-center justify-center mb-4 border border-slate-800">
+            <View className="p-8 rounded-3xl border border-dashed items-center justify-center py-10" style={{ backgroundColor: colors.card, borderColor: colors.border }}>
+              <View className="w-14 h-14 rounded-full items-center justify-center mb-4 border" style={{ backgroundColor: colors.bg, borderColor: colors.border }}>
                 <Sparkles size={24} color="#64748b" />
               </View>
               <Text className="text-white font-bold text-sm text-center">No tienes rutinas personalizadas</Text>
               <Text className="text-slate-500 text-xs text-center mt-1 px-4">
                 Comienza creando una rutina desde cero para estructurar tus entrenamientos favoritos.
               </Text>
-              <TouchableOpacity 
+              <TouchableOpacity
                 onPress={handleCreateRoutine}
-                className="mt-5 px-5 py-2.5 bg-blue-600 rounded-xl flex-row items-center gap-x-2"
+                className="mt-5 px-5 py-2.5 rounded-xl flex-row items-center gap-x-2"
+                style={{ backgroundColor: colors.accent }}
               >
-                <Plus size={16} color="white" strokeWidth={2.5} />
-                <Text className="text-white font-bold text-xs uppercase">Crear Rutina</Text>
+                <Plus size={16} color={colors.accentText} strokeWidth={2.5} />
+                <Text style={{ color: colors.accentText }} className="font-bold text-xs uppercase">Crear Rutina</Text>
               </TouchableOpacity>
             </View>
           ) : (
             <View className="gap-y-4">
               {routines.map(r => (
-                <View 
-                  key={r.id} 
-                  className="bg-slate-900/70 border border-slate-800 p-5 rounded-3xl"
+                <View
+                  key={r.id}
+                  className="p-5 rounded-3xl border"
+                  style={{ backgroundColor: colors.card, borderColor: colors.border }}
                 >
                   <View className="flex-row justify-between items-start mb-4">
                     <View className="flex-1 mr-4">
                       <Text className="text-white font-bold text-lg">{r.name}</Text>
-                      <Text className="text-slate-400 text-xs mt-1" numberOfLines={2}>
-                        {r.description || "Sin descripción disponible"}
-                      </Text>
+                      {getRoutineSummary(r) && (
+                        <Text className="text-slate-400 text-xs mt-1" numberOfLines={2}>
+                          {getRoutineSummary(r)}
+                        </Text>
+                      )}
                       <View className="flex-row items-center gap-x-2 mt-3">
-                        <View className="bg-blue-600/10 px-2 py-0.5 rounded border border-blue-500/20">
-                          <Text className="text-[10px] text-blue-400 font-extrabold uppercase">
+                        <View className="px-2 py-0.5 rounded border" style={{ backgroundColor: colors.accent + '1A', borderColor: colors.accent + '33' }}>
+                          <Text style={{ color: colors.accent }} className="text-[10px] font-extrabold uppercase">
                             {r.routine_exercises?.length || 0} Ejercicios
                           </Text>
                         </View>
                       </View>
                     </View>
-                    
+
                     {/* Acciones de Edición/Borrados Separadas */}
                     <View className="flex-row gap-x-2">
-                      <TouchableOpacity 
+                      <TouchableOpacity
                         onPress={() => handleEditRoutine(r.id)}
-                        className="w-8 h-8 bg-slate-950 border border-slate-800 rounded-lg items-center justify-center"
+                        className="w-8 h-8 rounded-lg items-center justify-center border"
+                        style={{ backgroundColor: colors.bg, borderColor: colors.border }}
                       >
                         <Edit2 size={14} color="#64748b" />
                       </TouchableOpacity>
@@ -172,12 +205,13 @@ export default function RoutineManagerScreen({ navigation }) {
                     </View>
                   </View>
 
-                  <TouchableOpacity 
+                  <TouchableOpacity
                     onPress={() => handleStartTraining(r)}
-                    className="w-full py-3 bg-blue-600 rounded-2xl flex-row items-center justify-center gap-x-2 shadow-md shadow-blue-600/10"
+                    className="w-full py-3 rounded-2xl flex-row items-center justify-center gap-x-2 shadow-md"
+                    style={{ backgroundColor: colors.accent }}
                   >
-                    <Play size={14} color="white" fill="white" />
-                    <Text className="text-white font-bold text-xs uppercase tracking-wider">
+                    <Play size={14} color={colors.accentText} fill={colors.accentText} />
+                    <Text style={{ color: colors.accentText }} className="font-bold text-xs uppercase tracking-wider">
                       Entrenar con esta rutina
                     </Text>
                   </TouchableOpacity>
@@ -192,9 +226,10 @@ export default function RoutineManagerScreen({ navigation }) {
           <Text className="text-purple-500 text-xs font-black uppercase tracking-widest mb-4">Plantillas Elite</Text>
           <View className="gap-y-4">
             {DEFAULT_TEMPLATES.map(t => (
-              <View 
-                key={t.id} 
-                className="bg-slate-900/40 border border-slate-800 p-5 rounded-3xl"
+              <View
+                key={t.id}
+                className="p-5 rounded-3xl border"
+                style={{ backgroundColor: colors.card, borderColor: colors.border }}
               >
                 <View className="flex-row justify-between items-start mb-3">
                   <View className="flex-1 mr-4">
@@ -208,17 +243,15 @@ export default function RoutineManagerScreen({ navigation }) {
                   </View>
                 </View>
 
-                {/* En las plantillas, no mostramos editar/eliminar, solo iniciar entrenamiento */}
-                <TouchableOpacity 
-                  onPress={() => handleStartTraining({
-                    name: t.name,
-                    routine_exercises: [] // Se cargará dinámicamente o libre con el nombre
-                  })}
+                {/* Es solo informativa: no tenemos una lista real de ejercicios por
+                    plantilla, así que no fingimos "cargarla" como una rutina vacía. */}
+                <TouchableOpacity
+                  onPress={() => setShowTemplateInfo(t)}
                   className="w-full py-3 bg-purple-600/15 border border-purple-500/20 rounded-2xl flex-row items-center justify-center gap-x-2"
                 >
-                  <Play size={14} color="#c084fc" fill="#c084fc" />
+                  <Info size={14} color="#c084fc" />
                   <Text className="text-purple-300 font-bold text-xs uppercase tracking-wider">
-                    Cargar Plantilla
+                    Ver Detalles
                   </Text>
                 </TouchableOpacity>
               </View>
@@ -226,6 +259,30 @@ export default function RoutineManagerScreen({ navigation }) {
           </View>
         </View>
       </ScrollView>
+
+      {/* Template Info Modal */}
+      <Modal visible={!!showTemplateInfo} transparent animationType="fade">
+        <View className="flex-1 bg-black/80 items-center justify-center p-6">
+          <View className="p-6 rounded-3xl w-full max-w-sm border border-purple-500/30" style={{ backgroundColor: colors.card }}>
+            <Text className="text-purple-400 font-black text-xl mb-2">{showTemplateInfo?.name}</Text>
+            <Text className="text-slate-300 text-sm mb-4 leading-5">{showTemplateInfo?.description}</Text>
+
+            <View className="bg-emerald-500/10 p-3 rounded-xl mb-3">
+              <Text className="text-emerald-400 text-[10px] font-black uppercase mb-1">PROS</Text>
+              <Text className="text-slate-400 text-xs">{showTemplateInfo?.pros}</Text>
+            </View>
+
+            <View className="bg-red-500/10 p-3 rounded-xl mb-6">
+              <Text className="text-red-400 text-[10px] font-black uppercase mb-1">CONTRAS</Text>
+              <Text className="text-slate-400 text-xs">{showTemplateInfo?.cons}</Text>
+            </View>
+
+            <TouchableOpacity onPress={() => setShowTemplateInfo(null)} className="w-full py-3 bg-purple-600 rounded-2xl items-center">
+              <Text className="text-white font-bold">Cerrar</Text>
+            </TouchableOpacity>
+          </View>
+        </View>
+      </Modal>
     </View>
   );
 }

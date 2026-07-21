@@ -23,6 +23,7 @@ export default function PreciseButton({
 
   if (variant === 'primary') {
     bgStyle = { backgroundColor: colors.accent };
+    textStyle = { color: colors.accentText };
   } else if (variant === 'secondary') {
     bgStyle = { backgroundColor: colors.card, borderColor: colors.border, borderWidth: 1.5 };
     textStyle = { color: colors.accent };
@@ -46,7 +47,7 @@ export default function PreciseButton({
       {...props}
     >
       {loading ? (
-        <ActivityIndicator color={variant === 'secondary' ? colors.accent : '#ffffff'} size="small" />
+        <ActivityIndicator color={variant === 'secondary' ? colors.accent : variant === 'primary' ? colors.accentText : '#ffffff'} size="small" />
       ) : (typeof children === 'string' || title) ? (
         <Text
           className={`font-outfit-bold text-base tracking-wider text-center ${textClassName}`}

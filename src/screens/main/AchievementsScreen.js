@@ -41,7 +41,7 @@ export default function AchievementsScreen({ navigation }) {
           <Text className="text-white text-5xl font-black">{earned.length}</Text>
           <Text className="text-slate-500 text-lg ml-2 font-bold">/ {ACHIEVEMENTS.length}</Text>
         </View>
-        <View className="w-full h-2 bg-slate-950 rounded-full mt-5 overflow-hidden">
+        <View className="w-full h-2 rounded-full mt-5 overflow-hidden" style={{ backgroundColor: colors.bg }}>
           <View 
             className="h-full" 
             style={{ 
@@ -82,6 +82,20 @@ export default function AchievementsScreen({ navigation }) {
                 <Text className="text-slate-500 text-xs mt-1 leading-relaxed">
                   {achievement.description}
                 </Text>
+                {!isEarned && achievement.target && (() => {
+                  const current = achievement.getCurrent(workouts || []);
+                  const pct = Math.min(100, (current / achievement.target) * 100);
+                  return (
+                    <View className="mt-2.5">
+                      <View className="w-full h-1.5 rounded-full overflow-hidden" style={{ backgroundColor: colors.bg }}>
+                        <View className="h-full rounded-full" style={{ width: `${pct}%`, backgroundColor: colors.accent }} />
+                      </View>
+                      <Text className="text-slate-500 text-[10px] mt-1 font-bold">
+                        {Math.min(current, achievement.target).toLocaleString('en-US')} / {achievement.target.toLocaleString('en-US')} {achievement.unit}
+                      </Text>
+                    </View>
+                  );
+                })()}
               </View>
               {isEarned && (
                 <View>
