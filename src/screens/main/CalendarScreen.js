@@ -48,7 +48,7 @@ const getMuscleColor = (mg) => {
 export default function CalendarScreen() {
   const navigation = useNavigation();
   const insets = useSafeAreaInsets();
-  const { workouts, theme, deleteWorkout, deleteExerciseFromWorkout } = useStore();
+  const { workouts, theme, deleteWorkout, deleteExerciseFromWorkout, setCurrentActiveWorkout } = useStore();
   const colors = THEMES[theme] || THEMES.midnight;
 
   const [currentDate, setCurrentDate] = useState(new Date());
@@ -128,6 +128,42 @@ export default function CalendarScreen() {
     }
   };
 
+  const handleEditWorkout = () => {
+    if (!selectedWorkout) return;
+    const grouped = {};
+    const order = [];
+    [...(selectedWorkout.workout_entries || [])]
+      .sort((a, b) => a.set_number - b.set_number)
+      .forEach(entry => {
+        if (!grouped[entry.exercise_id]) {
+          grouped[entry.exercise_id] = {
+            id: Date.now() + Math.random(),
+            exercise_id: entry.exercise_id,
+            name: entry.exercises?.name || 'Ejercicio',
+            muscle_group: entry.exercises?.muscle_group || 'Arms',
+            sets: [],
+          };
+          order.push(entry.exercise_id);
+        }
+        grouped[entry.exercise_id].sets.push({
+          weight: entry.weight,
+          reps: entry.reps,
+          rpe: entry.rpe,
+          type: 'Normal',
+          isCompleted: true,
+        });
+      });
+
+    setCurrentActiveWorkout({
+      id: selectedWorkout.id,
+      name: selectedWorkout.name,
+      date: selectedWorkout.workout_date,
+      exercises: order.map(id => grouped[id]),
+      isEditing: true,
+    });
+    navigation.navigate('ActiveWorkout');
+  };
+
   const handleDeleteWorkout = () => {
     if (!selectedWorkout) return;
     Alert.alert("Eliminar Entrenamiento", "¿Estás seguro de que deseas eliminar permanentemente este entrenamiento y todas sus series?", [
@@ -174,7 +210,7 @@ export default function CalendarScreen() {
           </View>
           <View style={{ flexDirection: 'row', gap: 8 }}>
             <TouchableOpacity
-              onPress={() => navigation.navigate('WorkoutSetup', { editId: selectedWorkout.id, date: selectedDay })}
+              onPress={handleEditWorkout}
               style={{ width: 40, height: 40, borderRadius: 20, backgroundColor: `${colors.accent}15`, alignItems: 'center', justifyContent: 'center', borderWidth: 1, borderColor: `${colors.accent}30` }}
             >
               <Dumbbell size={18} color={colors.accent} />

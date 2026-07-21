@@ -4,15 +4,16 @@ import { Plus, BookOpen, ChevronLeft, Dumbbell, Sparkles } from 'lucide-react-na
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import useStore from '../../store/useStore';
 
-export default function WorkoutSetupScreen({ navigation }) {
+export default function WorkoutSetupScreen({ navigation, route }) {
   const insets = useSafeAreaInsets();
   const routines = useStore(state => state.routines);
   const setCurrentActiveWorkout = useStore(state => state.setCurrentActiveWorkout);
+  const date = route?.params?.date || new Date().toISOString().split('T')[0];
 
   const startFreeWorkout = () => {
     setCurrentActiveWorkout({
       name: 'Entrenamiento Libre',
-      date: new Date().toISOString().split('T')[0],
+      date,
       exercises: []
     });
     navigation.navigate('ActiveWorkout');
@@ -29,7 +30,7 @@ export default function WorkoutSetupScreen({ navigation }) {
 
     setCurrentActiveWorkout({
       name: routine.name,
-      date: new Date().toISOString().split('T')[0],
+      date,
       exercises: exercises
     });
     navigation.navigate('ActiveWorkout');

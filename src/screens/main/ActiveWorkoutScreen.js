@@ -19,11 +19,15 @@ export default function ActiveWorkoutScreen({ navigation }) {
   const setGlobalTimer = useStore(state => state.setGlobalTimer);
   const globalTimerSeconds = useStore(state => state.globalTimerSeconds);
   const saveWorkoutEntry = useStore(state => state.saveWorkoutEntry);
+  const updateWorkout = useStore(state => state.updateWorkout);
   const workouts = useStore(state => state.workouts);
   const userProfile = useStore(state => state.userProfile);
   const exercises_db = useStore(state => state.exercises);
   const clearCurrentActiveWorkout = useStore(state => state.clearCurrentActiveWorkout);
-  
+
+  const isEditing = !!currentWorkout?.isEditing;
+  const editingWorkoutId = currentWorkout?.id;
+
   const [exercises, setExercises] = useState(currentWorkout?.exercises || []);
   const [workoutName, setWorkoutName] = useState(currentWorkout?.name || 'Entrenamiento');
   const [date] = useState(currentWorkout?.date || new Date().toISOString().split('T')[0]);
@@ -62,6 +66,14 @@ export default function ActiveWorkoutScreen({ navigation }) {
       navigation.replace('MainTabs');
     }
   }, [currentWorkout]);
+
+  // Sincroniza el progreso local de vuelta al store (y por lo tanto a AsyncStorage)
+  // para no perder series ingresadas si la app se cierra a mitad de sesión.
+  useEffect(() => {
+    if (currentWorkout) {
+      useStore.getState().setCurrentActiveWorkout({ ...currentWorkout, exercises, name: workoutName });
+    }
+  }, [exercises, workoutName]);
 
   const updateSet = (exIdx, setIdx, field, value) => {
     const newExs = [...exercises];
@@ -162,12 +174,12 @@ export default function ActiveWorkoutScreen({ navigation }) {
     }
 
     Alert.alert(
-      "Finalizar Entrenamiento",
-      "¿Deseas guardar los cambios y terminar la sesión?",
+      isEditing ? "Actualizar Entrenamiento" : "Finalizar Entrenamiento",
+      isEditing ? "¿Deseas guardar los cambios de esta sesión?" : "¿Deseas guardar los cambios y terminar la sesión?",
       [
         { text: "Cancelar", style: "cancel" },
-        { 
-          text: "Guardar", 
+        {
+          text: "Guardar",
           onPress: async () => {
             Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
             setIsSaving(true);
@@ -186,34 +198,50 @@ export default function ActiveWorkoutScreen({ navigation }) {
               });
             });
 
-            // Calcular logros previos ANTES de guardar las nuevas entries
-            const prevEarned = getEarnedAchievements(workouts);
-            const prevEarnedIds = prevEarned.map(a => a.id);
+            try {
+              if (isEditing) {
+                await updateWorkout(editingWorkoutId, date, workoutName, flatEntries);
+                useStore.getState().clearCurrentActiveWorkout();
+                useStore.getState().setGlobalTimer(null);
+                setIsSaving(false);
+                Alert.alert("Guardado", "Entrenamiento actualizado correctamente.");
+                navigation.replace('MainTabs');
+                return;
+              }
 
-            const savedWorkoutId = await saveWorkoutEntry(date, workoutName, flatEntries);
-            useStore.getState().clearCurrentActiveWorkout();
-            useStore.getState().setGlobalTimer(null);
-            setIsSaving(false);
+              // Calcular logros previos ANTES de guardar las nuevas entries
+              const prevEarned = getEarnedAchievements(workouts);
+              const prevEarnedIds = prevEarned.map(a => a.id);
 
-            // PR Detection simple
-            const prDetected = flatEntries.some(entry => {
-              const exId = entry.exercise_id;
-              const lastBest = workouts
-                .flatMap(w => w.workout_entries || [])
-                .filter(e => e.exercise_id === exId)
-                .sort((a, b) => (b.weight * b.reps) - (a.weight * a.reps))[0];
-              return !lastBest || (entry.weight * entry.reps > lastBest.weight * lastBest.reps);
-            });
-            
-            navigation.replace('WorkoutSummary', {
-              workoutId: savedWorkoutId,
-              workoutName,
-              date,
-              flatEntries,
-              exercises,
-              prDetected: prDetected,
-              prevEarnedIds
-            });
+              const savedWorkoutId = await saveWorkoutEntry(date, workoutName, flatEntries);
+              useStore.getState().clearCurrentActiveWorkout();
+              useStore.getState().setGlobalTimer(null);
+              setIsSaving(false);
+
+              // PR Detection simple
+              const prDetected = flatEntries.some(entry => {
+                const exId = entry.exercise_id;
+                const lastBest = workouts
+                  .flatMap(w => w.workout_entries || [])
+                  .filter(e => e.exercise_id === exId)
+                  .sort((a, b) => (b.weight * b.reps) - (a.weight * a.reps))[0];
+                return !lastBest || (entry.weight * entry.reps > lastBest.weight * lastBest.reps);
+              });
+
+              navigation.replace('WorkoutSummary', {
+                workoutId: savedWorkoutId,
+                workoutName,
+                date,
+                flatEntries,
+                exercises,
+                prDetected: prDetected,
+                prevEarnedIds
+              });
+            } catch (error) {
+              console.error("Error saving workout:", error);
+              setIsSaving(false);
+              Alert.alert("Error", "No se pudo guardar el entrenamiento. Inténtalo de nuevo.");
+            }
           }
         }
       ]
@@ -227,7 +255,7 @@ export default function ActiveWorkoutScreen({ navigation }) {
       {/* Header */}
       <View className="px-5 py-4 border-b border-slate-900 bg-slate-950/50 flex-row justify-between items-center">
         <View className="flex-1 mr-4">
-          <Text className="text-blue-500 text-[10px] font-bold uppercase tracking-widest">Sesión Activa</Text>
+          <Text className="text-blue-500 text-[10px] font-bold uppercase tracking-widest">{isEditing ? 'Editando Sesión' : 'Sesión Activa'}</Text>
           <Text className="text-white text-lg font-bold" numberOfLines={1}>{workoutName}</Text>
         </View>
         <View className="flex-row items-center gap-x-2">

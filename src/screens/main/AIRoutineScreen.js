@@ -3,7 +3,7 @@ import { View, Text, TouchableOpacity, ScrollView, Platform, Alert, ActivityIndi
 import { ChevronLeft, Calendar, Sparkles, ChevronRight, Zap, Target, BookOpen } from 'lucide-react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import useStore, { THEMES } from '../../store/useStore';
-import { generateAIRoutine, MUSCLE_SPANISH } from '../../services/AIRoutineGenerator';
+import { generateAIRoutine, getMuscleSpanish } from '../../services/AIRoutineGenerator';
 import Animated, { FadeIn, SlideInRight } from 'react-native-reanimated';
 
 export default function AIRoutineScreen({ navigation }) {
@@ -302,7 +302,7 @@ export default function AIRoutineScreen({ navigation }) {
                       {muscle === 'Triceps' && '⚡'}
                       {muscle === 'Core' && '🧱'}
                     </Text>
-                    <Text className="text-white font-extrabold text-xs mb-0.5">{MUSCLE_SPANISH[muscle]}</Text>
+                    <Text className="text-white font-extrabold text-xs mb-0.5">{getMuscleSpanish(muscle)}</Text>
                     <Text className="text-[9px] text-slate-500 uppercase tracking-widest font-black">
                       {isSelected ? 'Prioridad' : 'Normal'}
                     </Text>

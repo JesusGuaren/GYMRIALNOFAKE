@@ -93,12 +93,10 @@ const BIO_EXERCISES = {
 
 import { normalizeMuscleGroup, translateMuscleGroup } from '../constants/Muscles';
 
-export const MUSCLE_SPANISH = new Proxy({}, {
-  get: (target, prop) => {
-    if (prop === 'Core') return 'Abdomen / Core';
-    return translateMuscleGroup(prop);
-  }
-});
+export const getMuscleSpanish = (key) => {
+  if (key === 'Core') return 'Abdomen / Core';
+  return translateMuscleGroup(key);
+};
 
 const EXERCISE_TRANSLATIONS = {
   'bench press': 'press de banca',
@@ -469,7 +467,7 @@ export const generateAIRoutine = ({ goal, level, daysPerWeek, equipment = [], fo
     description: `Programa personalizado de nivel ${
       level === 'Beginner' ? 'Novato' : level === 'Intermediate' ? 'Intermedio' : 'Avanzado'
     }. Foco muscular prioritario: ${
-      focusMuscles.length > 0 ? focusMuscles.map(m => MUSCLE_SPANISH[m]).join(', ') : 'Desarrollo Equilibrado'
+      focusMuscles.length > 0 ? focusMuscles.map(m => getMuscleSpanish(m)).join(', ') : 'Desarrollo Equilibrado'
     }.`,
     days: generatedDays
   };

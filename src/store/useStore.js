@@ -323,41 +323,56 @@ const useStore = create(
 
   saveWorkoutEntry: async (date, name, entries) => {
     const user = get().user;
-    if (!user) return;
+    if (!user) throw new Error('No authenticated user');
 
     let workoutId;
-    const { data: existing } = await supabase
+    let createdWorkout = false;
+    const { data: existing, error: existingError } = await supabase
       .from('workouts')
       .select('id')
       .eq('user_id', user.id)
       .eq('workout_date', date)
       .single();
 
+    if (existingError && existingError.code !== 'PGRST116') throw existingError;
+
     if (existing) {
       workoutId = existing.id;
     } else {
-      const { data: newWorkout } = await supabase
+      const { data: newWorkout, error: newWorkoutError } = await supabase
         .from('workouts')
         .insert([{ user_id: user.id, workout_date: date, name }])
         .select()
         .single();
+
+      if (newWorkoutError || !newWorkout) throw newWorkoutError || new Error('Workout was not created');
       workoutId = newWorkout.id;
+      createdWorkout = true;
     }
 
-    const formattedEntries = entries.map((entry, index) => ({
-      workout_id: workoutId,
-      exercise_id: entry.exercise_id,
-      set_number: index + 1,
-      weight: entry.weight,
-      reps: entry.reps,
-      rpe: entry.rpe,
-      superset_id: entry.superset_id || null
-    }));
+    try {
+      const formattedEntries = entries.map((entry, index) => ({
+        workout_id: workoutId,
+        exercise_id: entry.exercise_id,
+        set_number: index + 1,
+        weight: entry.weight,
+        reps: entry.reps,
+        rpe: entry.rpe,
+        superset_id: entry.superset_id || null
+      }));
 
-    const { error } = await supabase.from('workout_entries').insert(formattedEntries);
-    if (error) console.error("Error inserting workout entries:", error);
+      const { error } = await supabase.from('workout_entries').insert(formattedEntries);
+      if (error) throw error;
+    } catch (error) {
+      if (createdWorkout) {
+        const { error: deleteError } = await supabase.from('workouts').delete().eq('id', workoutId).eq('user_id', user.id);
+        if (deleteError) console.error("Error rolling back workout:", deleteError);
+      }
+      throw error;
+    }
+
     await get().fetchWorkouts();
-    
+
     return workoutId;
   },
 
@@ -371,11 +386,13 @@ const useStore = create(
 
   updateWorkout: async (workoutId, date, name, entries) => {
     // Update the workout header
-    await supabase.from('workouts').update({ name, workout_date: date }).eq('id', workoutId);
-    
+    const { error: headerError } = await supabase.from('workouts').update({ name, workout_date: date }).eq('id', workoutId);
+    if (headerError) throw headerError;
+
     // Wipe old entries and insert new ones
-    await supabase.from('workout_entries').delete().eq('workout_id', workoutId);
-    
+    const { error: deleteError } = await supabase.from('workout_entries').delete().eq('workout_id', workoutId);
+    if (deleteError) throw deleteError;
+
     const formattedEntries = entries.map((entry, index) => ({
       workout_id: workoutId,
       exercise_id: entry.exercise_id,
@@ -386,7 +403,7 @@ const useStore = create(
     }));
 
     const { error } = await supabase.from('workout_entries').insert(formattedEntries);
-    if (error) console.error("Error updating entries:", error);
+    if (error) throw error;
     await get().fetchWorkouts();
   },
 

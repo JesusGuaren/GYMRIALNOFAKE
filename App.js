@@ -120,6 +120,9 @@ export default function App() {
             return;
           }
           console.log('Deep link PKCE session establecida:', data?.session?.user?.email);
+          if (type === 'recovery') {
+            useStore.getState().setIsResettingPassword(true);
+          }
         } catch (e) {
           console.error('Error procesando deep link (exchangeCode):', e.message ?? e);
         }

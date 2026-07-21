@@ -1,6 +1,7 @@
 import React, { useState, useMemo, useEffect } from 'react';
 import { View, Text, TouchableOpacity, ScrollView, TextInput, Alert, Modal, StyleSheet, Image, Linking } from 'react-native';
 import { Plus, Check, X, RotateCcw, Target, Trophy, Clock, Sparkles, Save, BookOpen, Trash2, TrendingUp, ChevronUp, ChevronDown, Info, Link as LinkIcon, Dumbbell, AlertCircle, HelpCircle, Play, Settings2 } from 'lucide-react-native';
+import * as Haptics from 'expo-haptics';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import useStore, { THEMES } from '../../store/useStore';
 import { calculate1RM, getRankByWeight } from '../../lib/rankingSystem';

@@ -17,6 +17,19 @@ serve(async (req) => {
   try {
     const { message, context, history } = await req.json()
 
+    if (typeof message !== 'string' || message.length === 0 || message.length > 2000) {
+      return new Response(JSON.stringify({ error: 'Mensaje inválido o demasiado largo.' }), {
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        status: 400
+      })
+    }
+    if (!Array.isArray(history) || history.length > 10) {
+      return new Response(JSON.stringify({ error: 'Historial inválido.' }), {
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        status: 400
+      })
+    }
+
     if (!GROQ_API_KEY) {
       throw new Error("GROQ_API_KEY no está configurada en las variables de entorno de Supabase.")
     }
