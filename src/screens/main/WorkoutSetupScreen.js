@@ -26,7 +26,7 @@ export default function WorkoutSetupScreen({ navigation, route }) {
   const loadRoutine = (routine) => {
     const exercises = routine.routine_exercises.map(re => {
       const lastSets = getLastExerciseSets(re.exercise_id, workouts);
-      const setCount = lastSets.length > 0 ? lastSets.length : (re.default_sets || 3);
+      const setCount = re.default_sets || 3;
       return {
         id: Date.now() + Math.random(),
         exercise_id: re.exercise_id,

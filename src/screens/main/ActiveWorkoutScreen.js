@@ -153,7 +153,7 @@ export default function ActiveWorkoutScreen({ navigation }) {
       name: ex.name,
       muscle_group: ex.muscle_group || 'Arms',
       supersetId: null,
-      sets: buildPrefilledSets(lastSets, lastSets.length > 0 ? lastSets.length : 1).map(s => ({ ...s, isCompleted: false }))
+      sets: buildPrefilledSets(lastSets, 1).map(s => ({ ...s, isCompleted: false }))
     };
     setExercises([...exercises, newEx]);
     setShowSelector(false);

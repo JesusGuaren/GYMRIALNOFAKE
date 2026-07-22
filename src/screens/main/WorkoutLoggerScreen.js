@@ -13,6 +13,13 @@ import { normalizeMuscleGroup, translateMuscleGroup, SUB_TO_PRIMARY_MAPPING } fr
 import ContextualTooltip from '../../components/common/ContextualTooltip';
 import CreateExerciseModal from '../../components/common/CreateExerciseModal';
 
+const SET_TYPES = [
+  { id: 'Normal', label: 'Normal', description: 'Serie de trabajo estándar.', color: '#94a3b8' },
+  { id: 'Warmup', label: 'Calentamiento', description: 'No cuenta como serie de trabajo.', color: '#fbbf24' },
+  { id: 'DropSet', label: 'Serie Descendente', description: 'Bajaste peso sin descansar.', color: '#ef4444' },
+  { id: 'AMRAP', label: 'Al Fallo (AMRAP)', description: 'Repeticiones máximas posibles.', color: '#a855f7' }
+];
+
 const MUSCLE_IMAGES = {
   'Chest': require('../../../assets/chest_bg.png'),
   'Back': require('../../../assets/back_bg.png'),
@@ -36,6 +43,7 @@ export default function WorkoutLoggerScreen({ navigation, route }) {
   const [showHelpModal, setShowHelpModal] = useState(null);
   const [isSaving, setIsSaving] = useState(false);
   const [showTypeHelp, setShowTypeHelp] = useState(false);
+  const [typeSelectorFor, setTypeSelectorFor] = useState(null);
   const [liveAlerts, setLiveAlerts] = useState({});
   const [searchTerm, setSearchTerm] = useState('');
 
@@ -44,7 +52,7 @@ export default function WorkoutLoggerScreen({ navigation, route }) {
       const routine = route.params.routineToLoad;
       const loaded = routine.routine_exercises?.map((re, idx) => {
         const lastSets = getLastExerciseSets(re.exercise_id, workouts);
-        const setCount = lastSets.length > 0 ? lastSets.length : (re.default_sets || 3);
+        const setCount = re.default_sets || 3;
         return {
           id: Date.now() + idx + Math.random(),
           exercise_id: re.exercise_id,
@@ -75,7 +83,7 @@ export default function WorkoutLoggerScreen({ navigation, route }) {
       name: ex.name,
       muscle_group: normalizeMuscleGroup(ex.muscle_group),
       supersetId: null,
-      sets: buildPrefilledSets(lastSets, lastSets.length > 0 ? lastSets.length : 1)
+      sets: buildPrefilledSets(lastSets, 1)
     }]);
     setShowSelector(false);
     setSearchTerm('');
@@ -114,11 +122,12 @@ export default function WorkoutLoggerScreen({ navigation, route }) {
     }
   };
 
-  const toggleSetType = (exIdx, setIdx) => {
-    const types = ['Normal', 'Warmup', 'DropSet', 'AMRAP'];
-    const currentType = exercises[exIdx].sets[setIdx].type || 'Normal';
-    const nextType = types[(types.indexOf(currentType) + 1) % types.length];
-    updateSet(exIdx, setIdx, 'type', nextType);
+  const handlePickType = (typeId) => {
+    if (typeSelectorFor) {
+      Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+      updateSet(typeSelectorFor.exIdx, typeSelectorFor.setIdx, 'type', typeId);
+    }
+    setTypeSelectorFor(null);
   };
 
   const handleDiscard = () => {
@@ -318,12 +327,10 @@ export default function WorkoutLoggerScreen({ navigation, route }) {
                         <TouchableOpacity onPress={() => setShowTypeHelp(false)}><X size={14} color="#64748b" /></TouchableOpacity>
                       </View>
                       <View className="gap-y-2">
-                        {['Normal', 'Warmup', 'DropSet', 'AMRAP'].map(t => (
-                          <View key={t} className="flex-row items-center gap-x-2">
-                            <View className="w-4 h-4 rounded-full border border-slate-500 items-center justify-center">
-                              <Text className="text-[8px] font-bold text-slate-500">{t[0]}</Text>
-                            </View>
-                            <Text className="text-slate-400 text-[10px]"><Text className="text-white font-bold">{t}:</Text> {t === 'Warmup' ? 'Calentamiento.' : t === 'DropSet' ? 'Sin descanso.' : t === 'AMRAP' ? 'Al fallo.' : 'Trabajo estándar.'}</Text>
+                        {SET_TYPES.map(t => (
+                          <View key={t.id} className="flex-row items-center gap-x-2">
+                            <View className="w-2 h-2 rounded-full" style={{ backgroundColor: t.color }} />
+                            <Text className="text-slate-400 text-[10px]"><Text className="text-white font-bold">{t.label}:</Text> {t.description}</Text>
                           </View>
                         ))}
                       </View>
@@ -332,15 +339,15 @@ export default function WorkoutLoggerScreen({ navigation, route }) {
 
                   <View className="gap-y-2">
                     {ex.sets.map((set, setIdx) => {
-                      const typeColors = { 'Normal': '#94a3b8', 'Warmup': '#fbbf24', 'DropSet': '#ef4444', 'AMRAP': '#a855f7' };
+                      const typeMeta = SET_TYPES.find(t => t.id === set.type) || SET_TYPES[0];
                       const typeLabels = { 'Normal': setIdx + 1, 'Warmup': 'W', 'DropSet': 'D', 'AMRAP': 'A' };
                       const alert = liveAlerts[`${exIdx}_${setIdx}`];
 
                       return (
                         <View key={setIdx}>
                           <View className="flex-row items-center gap-x-2">
-                            <TouchableOpacity onPress={() => toggleSetType(exIdx, setIdx)} style={{ borderColor: typeColors[set.type], backgroundColor: colors.bg }} className="w-10 h-10 rounded-full border items-center justify-center">
-                              <Text style={{ color: typeColors[set.type] }} className="text-[10px] font-bold">{typeLabels[set.type]}</Text>
+                            <TouchableOpacity onPress={() => setTypeSelectorFor({ exIdx, setIdx })} style={{ borderColor: typeMeta.color, backgroundColor: colors.bg }} className="w-10 h-10 rounded-full border items-center justify-center">
+                              <Text style={{ color: typeMeta.color }} className="text-[10px] font-bold">{typeLabels[set.type]}</Text>
                             </TouchableOpacity>
                             <View className="flex-1 relative">
                               <TextInput
@@ -597,6 +604,40 @@ export default function WorkoutLoggerScreen({ navigation, route }) {
         exerciseName={plateExName}
         colors={colors}
       />
+
+      {/* Selector de Tipo de Serie: reemplaza el ciclado "a ciegas" por opciones
+          explícitas y traducidas, ya que tocar el número de serie no era obvio. */}
+      <Modal visible={!!typeSelectorFor} transparent animationType="fade">
+        <TouchableOpacity
+          activeOpacity={1}
+          onPress={() => setTypeSelectorFor(null)}
+          className="flex-1 bg-black/80 items-center justify-center p-6"
+        >
+          <View className="p-5 rounded-3xl w-full max-w-sm border" style={{ backgroundColor: colors.card, borderColor: colors.border }}>
+            <Text className="text-white font-black text-base mb-4">Tipo de Serie</Text>
+            <View className="gap-y-2">
+              {SET_TYPES.map(t => {
+                const isSelected = typeSelectorFor && exercises[typeSelectorFor.exIdx]?.sets[typeSelectorFor.setIdx]?.type === t.id;
+                return (
+                  <TouchableOpacity
+                    key={t.id}
+                    onPress={() => handlePickType(t.id)}
+                    className="flex-row items-center gap-x-3 p-3 rounded-2xl border"
+                    style={{ backgroundColor: isSelected ? `${t.color}1A` : colors.bg, borderColor: isSelected ? t.color : colors.border }}
+                  >
+                    <View className="w-2.5 h-2.5 rounded-full" style={{ backgroundColor: t.color }} />
+                    <View className="flex-1">
+                      <Text className="text-white font-bold text-xs">{t.label}</Text>
+                      <Text className="text-slate-500 text-[10px] mt-0.5">{t.description}</Text>
+                    </View>
+                    {isSelected && <Check size={16} color={t.color} />}
+                  </TouchableOpacity>
+                );
+              })}
+            </View>
+          </View>
+        </TouchableOpacity>
+      </Modal>
 
       <ContextualTooltip
         visible={completedTutorials ? !completedTutorials.logger : true}
