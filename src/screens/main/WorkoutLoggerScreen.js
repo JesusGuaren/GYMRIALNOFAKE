@@ -10,15 +10,9 @@ import Animated, { FadeIn, FadeOut, SlideInRight, SlideOutLeft } from 'react-nat
 import { isBarbellExercise } from '../../services/PlateCalculatorService';
 import PlateCalculatorModal from '../../components/PlateCalculatorModal';
 import { normalizeMuscleGroup, translateMuscleGroup, SUB_TO_PRIMARY_MAPPING } from '../../constants/Muscles';
+import { SET_TYPES } from '../../constants/SetTypes';
 import ContextualTooltip from '../../components/common/ContextualTooltip';
 import CreateExerciseModal from '../../components/common/CreateExerciseModal';
-
-const SET_TYPES = [
-  { id: 'Normal', label: 'Normal', description: 'Serie de trabajo estándar.', color: '#94a3b8' },
-  { id: 'Warmup', label: 'Calentamiento', description: 'No cuenta como serie de trabajo.', color: '#fbbf24' },
-  { id: 'DropSet', label: 'Serie Descendente', description: 'Bajaste peso sin descansar.', color: '#ef4444' },
-  { id: 'AMRAP', label: 'Al Fallo (AMRAP)', description: 'Repeticiones máximas posibles.', color: '#a855f7' }
-];
 
 const MUSCLE_IMAGES = {
   'Chest': require('../../../assets/chest_bg.png'),

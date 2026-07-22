@@ -12,6 +12,7 @@ import { isBarbellExercise } from '../../services/PlateCalculatorService';
 import PlateCalculatorModal from '../../components/PlateCalculatorModal';
 import { THEMES } from '../../store/useStore';
 import { normalizeMuscleGroup, translateMuscleGroup, SUB_TO_PRIMARY_MAPPING } from '../../constants/Muscles';
+import { SET_TYPES } from '../../constants/SetTypes';
 import CreateExerciseModal from '../../components/common/CreateExerciseModal';
 
 export default function ActiveWorkoutScreen({ navigation }) {
@@ -38,6 +39,7 @@ export default function ActiveWorkoutScreen({ navigation }) {
   const [currentExerciseIdx, setCurrentExerciseIdx] = useState(0);
   const [liveAlerts, setLiveAlerts] = useState({});
   const [showStatusHelp, setShowStatusHelp] = useState(false);
+  const [typeSelectorFor, setTypeSelectorFor] = useState(null);
   const [searchTerm, setSearchTerm] = useState('');
   const [showHelpModal, setShowHelpModal] = useState(null);
   
@@ -81,6 +83,14 @@ export default function ActiveWorkoutScreen({ navigation }) {
     const newExs = [...exercises];
     newExs[exIdx].sets[setIdx][field] = field === 'type' ? value : parseFloat(value) || 0;
     setExercises(newExs);
+  };
+
+  const handlePickType = (typeId) => {
+    if (typeSelectorFor) {
+      Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+      updateSet(typeSelectorFor.exIdx, typeSelectorFor.setIdx, 'type', typeId);
+    }
+    setTypeSelectorFor(null);
   };
 
   const addSet = (exIdx) => {
@@ -444,13 +454,22 @@ export default function ActiveWorkoutScreen({ navigation }) {
 
             {/* Sets List */}
             <View className="gap-y-3">
-              {currentEx.sets.map((set, setIdx) => (
+              {currentEx.sets.map((set, setIdx) => {
+                const typeMeta = SET_TYPES.find(t => t.id === set.type) || SET_TYPES[0];
+                const typeLabels = { 'Normal': setIdx + 1, 'Warmup': 'W', 'DropSet': 'D', 'AMRAP': 'A' };
+                return (
                 <View key={setIdx}>
                   <View
                     className={`flex-row items-center p-3 rounded-2xl border ${set.isCompleted ? 'bg-emerald-500/5 border-emerald-500/20' : ''}`}
                     style={set.isCompleted ? { opacity: 0.7 } : { backgroundColor: colors.card, borderColor: colors.border }}
                   >
-                    <Text className="w-10 text-center font-bold text-slate-500">{setIdx + 1}</Text>
+                    <TouchableOpacity
+                      onPress={() => setTypeSelectorFor({ exIdx: currentExerciseIdx, setIdx })}
+                      style={{ borderColor: typeMeta.color, backgroundColor: colors.bg }}
+                      className="w-10 h-10 rounded-full border items-center justify-center"
+                    >
+                      <Text style={{ color: typeMeta.color }} className="text-[10px] font-bold">{typeLabels[set.type] ?? setIdx + 1}</Text>
+                    </TouchableOpacity>
                     <View className="flex-1 relative mx-1">
                       <TextInput
                         keyboardType="numeric"
@@ -537,7 +556,8 @@ export default function ActiveWorkoutScreen({ navigation }) {
                     </View>
                   )}
                 </View>
-              ))}
+                );
+              })}
             </View>
 
             <TouchableOpacity
@@ -703,6 +723,40 @@ export default function ActiveWorkoutScreen({ navigation }) {
         exerciseName={plateExName}
         colors={colors}
       />
+
+      {/* Selector de Tipo de Serie: mismo picker explícito que en Bitácora,
+          en vez de ciclar a ciegas tocando el número de serie. */}
+      <Modal visible={!!typeSelectorFor} transparent animationType="fade">
+        <TouchableOpacity
+          activeOpacity={1}
+          onPress={() => setTypeSelectorFor(null)}
+          className="flex-1 bg-black/80 items-center justify-center p-6"
+        >
+          <View className="p-5 rounded-3xl w-full max-w-sm border" style={{ backgroundColor: colors.card, borderColor: colors.border }}>
+            <Text className="text-white font-black text-base mb-4">Tipo de Serie</Text>
+            <View className="gap-y-2">
+              {SET_TYPES.map(t => {
+                const isSelected = typeSelectorFor && exercises[typeSelectorFor.exIdx]?.sets[typeSelectorFor.setIdx]?.type === t.id;
+                return (
+                  <TouchableOpacity
+                    key={t.id}
+                    onPress={() => handlePickType(t.id)}
+                    className="flex-row items-center gap-x-3 p-3 rounded-2xl border"
+                    style={{ backgroundColor: isSelected ? `${t.color}1A` : colors.bg, borderColor: isSelected ? t.color : colors.border }}
+                  >
+                    <View className="w-2.5 h-2.5 rounded-full" style={{ backgroundColor: t.color }} />
+                    <View className="flex-1">
+                      <Text className="text-white font-bold text-xs">{t.label}</Text>
+                      <Text className="text-slate-500 text-[10px] mt-0.5">{t.description}</Text>
+                    </View>
+                    {isSelected && <Check size={16} color={t.color} />}
+                  </TouchableOpacity>
+                );
+              })}
+            </View>
+          </View>
+        </TouchableOpacity>
+      </Modal>
     </View>
   );
 }
