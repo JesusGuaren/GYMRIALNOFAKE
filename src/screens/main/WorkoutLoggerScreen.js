@@ -13,6 +13,7 @@ import { normalizeMuscleGroup, translateMuscleGroup, SUB_TO_PRIMARY_MAPPING } fr
 import { SET_TYPES } from '../../constants/SetTypes';
 import ContextualTooltip from '../../components/common/ContextualTooltip';
 import CreateExerciseModal from '../../components/common/CreateExerciseModal';
+import InfoHint from '../../components/common/InfoHint';
 
 const MUSCLE_IMAGES = {
   'Chest': require('../../../assets/chest_bg.png'),
@@ -310,7 +311,13 @@ export default function WorkoutLoggerScreen({ navigation, route }) {
                     </TouchableOpacity>
                     <Text className="flex-1 text-center text-[9px] text-slate-500 font-bold">KG</Text>
                     <Text className="flex-1 text-center text-[9px] text-slate-500 font-bold">REPS</Text>
-                    <Text className="flex-1 text-center text-[9px] text-slate-500 font-bold">RPE</Text>
+                    <View className="flex-1 flex-row items-center justify-center gap-x-1">
+                      <Text className="text-[9px] text-slate-500 font-bold">RPE</Text>
+                      <InfoHint
+                        title="RPE (Esfuerzo Percibido)"
+                        description="Escala del 1 al 10 de qué tan difícil sentiste la serie. 10 = fallo total, sin repeticiones de reserva. 8 = te quedaban 1-2 reps en el tanque."
+                      />
+                    </View>
                     <View className="w-10" />
                   </View>
 

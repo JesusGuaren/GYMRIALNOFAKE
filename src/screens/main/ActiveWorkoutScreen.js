@@ -14,6 +14,7 @@ import { THEMES } from '../../store/useStore';
 import { normalizeMuscleGroup, translateMuscleGroup, SUB_TO_PRIMARY_MAPPING } from '../../constants/Muscles';
 import { SET_TYPES } from '../../constants/SetTypes';
 import CreateExerciseModal from '../../components/common/CreateExerciseModal';
+import InfoHint from '../../components/common/InfoHint';
 
 export default function ActiveWorkoutScreen({ navigation }) {
   const insets = useSafeAreaInsets();
@@ -430,7 +431,13 @@ export default function ActiveWorkoutScreen({ navigation }) {
               <Text className="w-10 text-center text-[10px] text-slate-500 font-bold uppercase">Set</Text>
               <Text className="flex-1 text-center text-[10px] text-slate-500 font-bold uppercase">Kg</Text>
               <Text className="flex-1 text-center text-[10px] text-slate-500 font-bold uppercase">Reps</Text>
-              <Text className="flex-1 text-center text-[10px] text-slate-500 font-bold uppercase">RPE</Text>
+              <View className="flex-1 flex-row items-center justify-center gap-x-1">
+                <Text className="text-[10px] text-slate-500 font-bold uppercase">RPE</Text>
+                <InfoHint
+                  title="RPE (Esfuerzo Percibido)"
+                  description="Escala del 1 al 10 de qué tan difícil sentiste la serie. 10 = fallo total, sin repeticiones de reserva. 8 = te quedaban 1-2 reps en el tanque."
+                />
+              </View>
               <TouchableOpacity
                 onPress={() => setShowStatusHelp(!showStatusHelp)}
                 className="w-12 items-center"

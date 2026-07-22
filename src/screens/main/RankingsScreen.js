@@ -5,6 +5,7 @@ import useStore, { THEMES } from '../../store/useStore';
 import { getRankByWeight, calculate1RM, RANKS } from '../../lib/rankingSystem';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { normalizeMuscleGroup, translateMuscleGroup } from '../../constants/Muscles';
+import InfoHint from '../../components/common/InfoHint';
 
 export default function RankingsScreen({ navigation }) {
   const insets = useSafeAreaInsets();
@@ -52,7 +53,13 @@ export default function RankingsScreen({ navigation }) {
         </TouchableOpacity>
         <View>
           <Text className="text-2xl font-black text-white">SALÓN DE RANGO</Text>
-          <Text className="text-slate-500 text-[10px] tracking-widest font-bold">TU NIVEL DE FUERZA</Text>
+          <View className="flex-row items-center gap-x-1.5">
+            <Text className="text-slate-500 text-[10px] tracking-widest font-bold">TU NIVEL DE FUERZA</Text>
+            <InfoHint
+              title="¿Qué es el 1RM?"
+              description="1RM = Una Repetición Máxima: el peso más pesado que estimamos que podrías levantar una sola vez, calculado a partir de tus series reales (peso x repeticiones). Tu rango se basa en tu mejor 1RM estimado por ejercicio."
+            />
+          </View>
         </View>
       </View>
 
