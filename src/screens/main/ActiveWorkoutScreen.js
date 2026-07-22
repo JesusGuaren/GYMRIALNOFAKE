@@ -5,7 +5,7 @@ import * as Haptics from 'expo-haptics';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import useStore from '../../store/useStore';
 import { calculate1RM } from '../../lib/rankingSystem';
-import { evaluateLiveSet, getMuscleRecoveryStates, getAdvancedSuggestion } from '../../services/CoachingService';
+import { evaluateLiveSet, getMuscleRecoveryStates, getAdvancedSuggestion, getLastExerciseSets, buildPrefilledSets } from '../../services/CoachingService';
 import { getEarnedAchievements } from '../../services/AchievementService';
 import Animated, { FadeIn } from 'react-native-reanimated';
 import { isBarbellExercise } from '../../services/PlateCalculatorService';
@@ -146,13 +146,14 @@ export default function ActiveWorkoutScreen({ navigation }) {
   };
 
   const handleSelectExercise = (ex) => {
+    const lastSets = getLastExerciseSets(ex.id, workouts);
     const newEx = {
       id: Date.now(),
       exercise_id: ex.id,
       name: ex.name,
       muscle_group: ex.muscle_group || 'Arms',
       supersetId: null,
-      sets: [{ weight: 0, reps: 0, rpe: 8, type: 'Normal', isCompleted: false }]
+      sets: buildPrefilledSets(lastSets, lastSets.length > 0 ? lastSets.length : 1).map(s => ({ ...s, isCompleted: false }))
     };
     setExercises([...exercises, newEx]);
     setShowSelector(false);

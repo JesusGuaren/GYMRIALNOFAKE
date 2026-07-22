@@ -5,7 +5,7 @@ import * as Haptics from 'expo-haptics';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import useStore, { THEMES } from '../../store/useStore';
 import { calculate1RM, getRankByWeight } from '../../lib/rankingSystem';
-import { getAdvancedSuggestion, getMuscleRecoveryStates, evaluateLiveSet } from '../../services/CoachingService';
+import { getAdvancedSuggestion, getMuscleRecoveryStates, evaluateLiveSet, getLastExerciseSets, buildPrefilledSets } from '../../services/CoachingService';
 import Animated, { FadeIn, FadeOut, SlideInRight, SlideOutLeft } from 'react-native-reanimated';
 import { isBarbellExercise } from '../../services/PlateCalculatorService';
 import PlateCalculatorModal from '../../components/PlateCalculatorModal';
@@ -42,19 +42,18 @@ export default function WorkoutLoggerScreen({ navigation, route }) {
   useEffect(() => {
     if (route.params?.routineToLoad) {
       const routine = route.params.routineToLoad;
-      const loaded = routine.routine_exercises?.map((re, idx) => ({
-        id: Date.now() + idx + Math.random(),
-        exercise_id: re.exercise_id,
-        name: re.exercises?.name || re.name || '',
-        muscle_group: normalizeMuscleGroup(re.exercises?.muscle_group || re.muscle_group),
-        supersetId: re.superset_id || null,
-        sets: Array.from({ length: re.default_sets || 3 }, () => ({
-          weight: 0,
-          reps: re.default_reps || 10,
-          rpe: 8,
-          type: 'Normal'
-        }))
-      })) || [];
+      const loaded = routine.routine_exercises?.map((re, idx) => {
+        const lastSets = getLastExerciseSets(re.exercise_id, workouts);
+        const setCount = lastSets.length > 0 ? lastSets.length : (re.default_sets || 3);
+        return {
+          id: Date.now() + idx + Math.random(),
+          exercise_id: re.exercise_id,
+          name: re.exercises?.name || re.name || '',
+          muscle_group: normalizeMuscleGroup(re.exercises?.muscle_group || re.muscle_group),
+          supersetId: re.superset_id || null,
+          sets: buildPrefilledSets(lastSets, setCount, re.default_reps || 10)
+        };
+      }) || [];
       setExercises(loaded);
       setWorkoutName(routine.name);
       navigation.setParams({ routineToLoad: null });
@@ -69,12 +68,14 @@ export default function WorkoutLoggerScreen({ navigation, route }) {
   const recoveryStates = useMemo(() => getMuscleRecoveryStates(workouts), [workouts]);
 
   const handleSelectExercise = (ex) => {
+    const lastSets = getLastExerciseSets(ex.id, workouts);
     setExercises([...exercises, {
       id: Date.now(),
       exercise_id: ex.id,
       name: ex.name,
       muscle_group: normalizeMuscleGroup(ex.muscle_group),
-      sets: [{ weight: 0, reps: 0, rpe: 8, type: 'Normal' }]
+      supersetId: null,
+      sets: buildPrefilledSets(lastSets, lastSets.length > 0 ? lastSets.length : 1)
     }]);
     setShowSelector(false);
     setSearchTerm('');

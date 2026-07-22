@@ -3,10 +3,12 @@ import { View, Text, TouchableOpacity, ScrollView, Platform } from 'react-native
 import { Plus, BookOpen, ChevronLeft, Dumbbell, Sparkles } from 'lucide-react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import useStore, { THEMES } from '../../store/useStore';
+import { getLastExerciseSets, buildPrefilledSets } from '../../services/CoachingService';
 
 export default function WorkoutSetupScreen({ navigation, route }) {
   const insets = useSafeAreaInsets();
   const routines = useStore(state => state.routines);
+  const workouts = useStore(state => state.workouts);
   const setCurrentActiveWorkout = useStore(state => state.setCurrentActiveWorkout);
   const theme = useStore(state => state.theme);
   const colors = THEMES[theme] || THEMES.midnight;
@@ -22,14 +24,18 @@ export default function WorkoutSetupScreen({ navigation, route }) {
   };
 
   const loadRoutine = (routine) => {
-    const exercises = routine.routine_exercises.map(re => ({
-      id: Date.now() + Math.random(),
-      exercise_id: re.exercise_id,
-      name: re.exercises.name,
-      muscle_group: re.exercises.muscle_group || 'Arms',
-      supersetId: re.superset_id || null,
-      sets: [{ weight: 0, reps: 0, rpe: 8, type: 'Normal', isCompleted: false }]
-    }));
+    const exercises = routine.routine_exercises.map(re => {
+      const lastSets = getLastExerciseSets(re.exercise_id, workouts);
+      const setCount = lastSets.length > 0 ? lastSets.length : (re.default_sets || 3);
+      return {
+        id: Date.now() + Math.random(),
+        exercise_id: re.exercise_id,
+        name: re.exercises.name,
+        muscle_group: re.exercises.muscle_group || 'Arms',
+        supersetId: re.superset_id || null,
+        sets: buildPrefilledSets(lastSets, setCount).map(s => ({ ...s, isCompleted: false }))
+      };
+    });
 
     setCurrentActiveWorkout({
       name: routine.name,

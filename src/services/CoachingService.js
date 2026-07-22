@@ -72,6 +72,35 @@ export const getAdvancedSuggestion = (exId, workouts, currentExercises = []) => 
   }
 };
 
+// Series (en orden) de la sesión previa más reciente que incluyó este ejercicio
+// (excluye el día de hoy, para no mezclarse con la sesión que se está armando).
+export const getLastExerciseSets = (exId, workouts) => {
+  const today = new Date().toISOString().split('T')[0];
+  const previous = (workouts || [])
+    .filter(w => w.workout_date !== today && w.workout_entries?.some(e => e.exercise_id === exId))
+    .sort((a, b) => new Date(b.workout_date) - new Date(a.workout_date))[0];
+
+  if (!previous) return [];
+
+  return previous.workout_entries
+    .filter(e => e.exercise_id === exId)
+    .sort((a, b) => (a.set_number || 0) - (b.set_number || 0))
+    .map(e => ({ weight: e.weight, reps: e.reps, rpe: e.rpe || 8 }));
+};
+
+// Arma `count` series precargadas con lo que se hizo la última vez (en vez de
+// arrancar siempre en 0), repitiendo la última serie conocida si se piden más
+// series de las que hay historial. Si nunca se hizo el ejercicio, arranca en 0.
+export const buildPrefilledSets = (lastSets, count, fallbackReps = 0) => {
+  if (!lastSets || lastSets.length === 0) {
+    return Array.from({ length: count }, () => ({ weight: 0, reps: fallbackReps, rpe: 8, type: 'Normal' }));
+  }
+  return Array.from({ length: count }, (_, i) => {
+    const src = lastSets[i] || lastSets[lastSets.length - 1];
+    return { weight: src.weight, reps: src.reps, rpe: src.rpe || 8, type: 'Normal' };
+  });
+};
+
 export const evaluateLiveSet = (weight, reps, rpe, type = 'Normal') => {
   if (type === 'Warmup' || !weight || weight <= 0 || !reps || reps <= 0 || !rpe) return null;
 
