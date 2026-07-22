@@ -29,13 +29,13 @@ export default function DashboardScreen({ navigation }) {
   // 1. Comprobar si completó sesión hoy (Contexto diario)
   const todayWorkout = useMemo(() => {
     const todayStr = new Date().toISOString().split('T')[0];
-    return (workouts || []).find(w => w.workout_date === todayStr && !w.name?.endsWith('\u200B'));
+    return (workouts || []).find(w => w.workout_date === todayStr);
   }, [workouts]);
 
   // 2. Recomendación sugerida de rutina (Siguiente en secuencia)
   const recommendedRoutine = useMemo(() => {
     if ((workouts || []).length === 0) return (routines || [])[0] || null;
-    const lastWorkout = (workouts || []).find(w => !w.name?.endsWith('\u200B'));
+    const lastWorkout = (workouts || [])[0];
     if (!lastWorkout) return (routines || [])[0] || null;
 
     const programRoutines = (routines || []).filter(r => r.program_id === activeProgram?.id);
@@ -133,7 +133,7 @@ export default function DashboardScreen({ navigation }) {
   const hasNotification = useMemo(() => {
     if (currentActiveWorkout) return true;
     
-    const activeWorkouts = workouts.filter(w => !w.name?.endsWith('\u200B'));
+    const activeWorkouts = workouts;
     const muscleLastTrained = {};
     const now = new Date();
     activeWorkouts.slice(0, 15).forEach(w => {

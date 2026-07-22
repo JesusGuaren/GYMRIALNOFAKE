@@ -201,7 +201,7 @@ const resolveIntent = (intent, normalizedText, entities, workouts, routines, pro
       let weeklySets = 0;
       workouts.forEach(w => {
         const wDate = new Date(w.workout_date);
-        if (wDate >= sevenDaysAgo && !w.name?.endsWith('\u200B')) {
+        if (wDate >= sevenDaysAgo) {
           w.workout_entries?.forEach(e => {
             const mg = e.exercises?.muscle_group;
             if (!mg) return;
@@ -215,7 +215,7 @@ const resolveIntent = (intent, normalizedText, entities, workouts, routines, pro
 
       // Último levantamiento
       let progressMemory = null;
-      const activeWorkouts = workouts.filter(w => !w.name?.endsWith('\u200B'));
+      const activeWorkouts = workouts;
       let foundEntry = null;
       let foundWorkout = null;
       for (const w of activeWorkouts) {
@@ -288,7 +288,7 @@ const resolveIntent = (intent, normalizedText, entities, workouts, routines, pro
       const targetMuscle = entities.muscle || context.lastMuscle;
       if (targetMuscle) {
         const nameEsp = MUSCLE_TRANSLATIONS[targetMuscle] || targetMuscle;
-        const activeWorkouts = workouts.filter(w => !w.name?.endsWith('\u200B'));
+        const activeWorkouts = workouts;
         let lastDate = null;
         for (const w of activeWorkouts) {
           const hasMuscle = w.workout_entries?.some(e => {

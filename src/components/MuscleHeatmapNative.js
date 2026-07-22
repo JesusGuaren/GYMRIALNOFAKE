@@ -32,8 +32,6 @@ export default function MuscleHeatmapNative({ workouts, colors, selectedMuscle, 
     sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
 
     workouts.forEach(w => {
-      if (w.name?.endsWith('\u200B')) return;
-
       if (new Date(w.workout_date) >= sevenDaysAgo) {
         w.workout_entries?.forEach(e => {
           const rawMg = e.exercises?.muscle_group;

@@ -92,7 +92,7 @@ const buildUserContext = (stateContext = {}) => {
   const activeProgram = (programs || []).find(p => p.is_active);
   let recommendedRoutine = null;
   if (workouts.length > 0) {
-    const lastWorkout = workouts.find(w => !w.name?.endsWith('\u200B'));
+    const lastWorkout = workouts[0];
     if (lastWorkout) {
       const programRoutines = (routines || []).filter(r => r.program_id === activeProgram?.id);
       const targetList = programRoutines.length > 0 ? programRoutines : (routines || []);
@@ -152,7 +152,7 @@ export const queryCoach = async (message, history = [], stateContext = {}) => {
   let recommendedRoutine = null;
   const activeProgram = (programs || []).find(p => p.is_active);
   if (workouts.length > 0) {
-    const lastWorkout = workouts.find(w => !w.name?.endsWith('\u200B'));
+    const lastWorkout = workouts[0];
     if (lastWorkout) {
       const programRoutines = (routines || []).filter(r => r.program_id === activeProgram?.id);
       const targetList = programRoutines.length > 0 ? programRoutines : (routines || []);

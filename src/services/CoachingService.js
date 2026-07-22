@@ -158,7 +158,7 @@ export const getGlobalMotivation = (workouts, profile) => {
 };
 
 export const getWeeklyInsight = (workouts) => {
-  const activeWorkouts = workouts.filter(w => !w.name?.endsWith('\u200B'));
+  const activeWorkouts = workouts;
   const now = new Date();
   const oneWeekAgo = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
   const twoWeeksAgo = new Date(now.getTime() - 14 * 24 * 60 * 60 * 1000);
@@ -180,7 +180,7 @@ export const getWeeklyInsight = (workouts) => {
 };
 
 export const getMuscleReminder = (workouts) => {
-  const activeWorkouts = workouts.filter(w => !w.name?.endsWith('\u200B'));
+  const activeWorkouts = workouts;
   if (activeWorkouts.length === 0) return null;
 
   const muscleHistory = {};
@@ -205,7 +205,7 @@ export const getMuscleReminder = (workouts) => {
 };
 
 export const getMuscleRecoveryStates = (workouts) => {
-  const activeWorkouts = workouts.filter(w => !w.name?.endsWith('\u200B'));
+  const activeWorkouts = workouts;
   const muscleLastTrained = {};
   activeWorkouts.slice(0, 20).forEach(w => {
     const workoutDate = new Date(w.workout_date);

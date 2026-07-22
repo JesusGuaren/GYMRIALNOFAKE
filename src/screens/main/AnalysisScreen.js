@@ -600,7 +600,7 @@ export default function AnalysisScreen({ navigation }) {
          <View className="gap-y-4">
            {(() => {
              const bests = {};
-             workouts.filter(w => !w.name?.endsWith(String.fromCharCode(0x200B))).forEach(w => w.workout_entries?.forEach(e => {
+             workouts.forEach(w => w.workout_entries?.forEach(e => {
                const name = e.exercises?.name;
                const rm = calculate1RM(e.weight, e.reps);
                if (!bests[name] || rm > bests[name].rm) bests[name] = { rm, muscle: e.exercises?.muscle_group };

@@ -93,7 +93,7 @@ export const InteractiveBodySection = React.memo(function InteractiveBodySection
     }
 
     // 2. Neglected muscles (> 7 days)
-    const activeWorkouts = workouts.filter(w => !w.name?.endsWith('\u200B'));
+    const activeWorkouts = workouts;
     const muscleLastTrained = {};
     activeWorkouts.slice(0, 15).forEach(w => {
       const workoutDate = new Date(w.workout_date);
@@ -184,7 +184,7 @@ export const InteractiveBodySection = React.memo(function InteractiveBodySection
 
     workouts.forEach(w => {
       const wDate = new Date(w.workout_date);
-      if (wDate >= sevenDaysAgo && !w.name?.endsWith('\u200B')) {
+      if (wDate >= sevenDaysAgo) {
         w.workout_entries?.forEach(e => {
           const mg = e.exercises?.muscle_group;
           if (!mg) return;
@@ -204,8 +204,8 @@ export const InteractiveBodySection = React.memo(function InteractiveBodySection
     // Último entrenamiento específico
     let lastWorkoutInfo = 'Sin registros';
     let progressMemory = null;
-    const activeWorkouts = workouts.filter(w => !w.name?.endsWith('\u200B'));
-    
+    const activeWorkouts = workouts;
+
     let foundWorkout = null;
     let foundEntry = null;
     for (const w of activeWorkouts) {

@@ -101,7 +101,7 @@ export default function CoachScreen({ route, navigation }) {
   useEffect(() => {
     if (!coachChatMessages || coachChatMessages.length === 0) {
       const todayStr = new Date().toISOString().split('T')[0];
-      const todayWorkout = (workouts || []).find(w => w.workout_date === todayStr && !w.name?.endsWith('\u200B'));
+      const todayWorkout = (workouts || []).find(w => w.workout_date === todayStr);
       
       let welcomeText = '';
 
@@ -109,7 +109,7 @@ export default function CoachScreen({ route, navigation }) {
         welcomeText = `¡Excelente sesión completada hoy, Atleta! 🦾 Tus fibras musculares están en reconstrucción activa.\n\nRecuerda consumir suficiente proteína y descansar bien. ¿En qué te puedo ayudar hoy?`;
       } else {
         // Comprobar días inactivos
-        const lastW = (workouts || []).find(w => !w.name?.endsWith('\u200B'));
+        const lastW = (workouts || [])[0];
         const diffDays = lastW 
           ? Math.floor((new Date() - new Date(lastW.workout_date)) / (1000 * 60 * 60 * 24)) 
           : 0;
