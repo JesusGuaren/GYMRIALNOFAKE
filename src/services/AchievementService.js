@@ -129,7 +129,7 @@ const generateAchievements = () => {
     all.push({
       id: `streak_${d}`, name: streakTitles[i], description: `Entrena ${d} días seguidos sin fallar.`,
       icon: '🔥', xpReward: streakXp[i], target: d, unit: 'días', getCurrent: calculateStreak,
-      requirement: (w) => calculateStreak(w) >= d
+      category: 'Racha', requirement: (w) => calculateStreak(w) >= d
     });
   });
 
@@ -141,7 +141,7 @@ const generateAchievements = () => {
     all.push({
       id: `total_w_${t}`, name: totalTitles[i], description: `Completa ${t} entrenamientos en total.`,
       icon: '🏆', xpReward: totalXp[i], target: t, unit: 'entrenamientos', getCurrent: (w) => w.length,
-      requirement: (w) => w.length >= t
+      category: 'Constancia', requirement: (w) => w.length >= t
     });
   });
 
@@ -153,7 +153,7 @@ const generateAchievements = () => {
     all.push({
       id: `life_vol_${v}`, name: volTitles[i], description: `Mueve un total acumulado de ${v.toLocaleString('en-US')} kg en tu vida.`,
       icon: '🌋', xpReward: volXp[i], target: v, unit: 'kg', getCurrent: getTotalVolume,
-      requirement: (w) => getTotalVolume(w) >= v
+      category: 'Volumen Total', requirement: (w) => getTotalVolume(w) >= v
     });
   });
 
@@ -166,7 +166,7 @@ const generateAchievements = () => {
     all.push({
       id: `single_vol_${v}`, name: singleVolTitles[i], description: `Mueve más de ${v.toLocaleString('en-US')} kg en una sola sesión.`,
       icon: '🏋️', xpReward: singleVolXp[i], target: v, unit: 'kg (sesión)', getCurrent: getMaxSingleWorkoutVolume,
-      requirement: (w) => getMaxSingleWorkoutVolume(w) >= v
+      category: 'Volumen por Sesión', requirement: (w) => getMaxSingleWorkoutVolume(w) >= v
     });
   });
 
@@ -182,7 +182,7 @@ const generateAchievements = () => {
         id: `mastery_${m}_lvl${lvl+1}`, name: `Maestría de ${spanishName} Nivel ${lvl+1}`,
         description: `Acumula ${vol.toLocaleString('en-US')} kg movidos en ejercicios de ${spanishName}.`,
         icon: muscleEmojis[m], xpReward: 100 + (lvl * 150), target: vol, unit: 'kg', getCurrent: (w) => calculateTotalMuscleVolume(w, m),
-        requirement: (w) => calculateTotalMuscleVolume(w, m) >= vol
+        category: `Maestría: ${spanishName}`, requirement: (w) => calculateTotalMuscleVolume(w, m) >= vol
       });
     });
   });
@@ -202,7 +202,7 @@ const generateAchievements = () => {
         id: `1rm_${lift.id}_${kg}`, name: `Rey del ${lift.name} ${kg}kg`,
         description: `Alcanza un 1RM estimado de ${kg}kg en ${lift.name}.`,
         icon: lift.icon, xpReward: lift.xpScale * (lvl + 1), target: kg, unit: 'kg (1RM)', getCurrent: getCurrentRM,
-        requirement: (w) => getCurrentRM(w) >= kg
+        category: `1RM: ${lift.name}`, requirement: (w) => getCurrentRM(w) >= kg
       });
     });
   });
@@ -210,15 +210,15 @@ const generateAchievements = () => {
   // 6. SPECIALS
   all.push({
     id: 'triple_pr', name: 'Cazador de Récords', description: 'Consigue 3 o más récords (PR) en una sola sesión.',
-    icon: '⚡', xpReward: 400, requirement: (w) => checkTriplePR(w)
+    icon: '⚡', xpReward: 400, category: 'Especiales', requirement: (w) => checkTriplePR(w)
   });
   all.push({
     id: 'early_bird', name: 'Madrugador', description: 'Completa un entrenamiento antes de las 8:00 AM.',
-    icon: '🌅', xpReward: 150, requirement: (w) => checkTimeWorkout(w, 0, 8)
+    icon: '🌅', xpReward: 150, category: 'Especiales', requirement: (w) => checkTimeWorkout(w, 0, 8)
   });
   all.push({
     id: 'night_warrior', name: 'Guerrero Nocturno', description: 'Completa un entrenamiento después de las 9:00 PM.',
-    icon: '🌌', xpReward: 150, requirement: (w) => checkTimeWorkout(w, 21, 24)
+    icon: '🌌', xpReward: 150, category: 'Especiales', requirement: (w) => checkTimeWorkout(w, 21, 24)
   });
 
   return all;
