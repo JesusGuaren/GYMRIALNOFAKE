@@ -1,11 +1,30 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts"
+import { createClient } from "https://esm.sh/@supabase/supabase-js@2"
 
 const GROQ_API_KEY = Deno.env.get("GROQ_API_KEY")
+const SUPABASE_URL = Deno.env.get("SUPABASE_URL")
+const SUPABASE_SERVICE_ROLE_KEY = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")
+
+// Tope de mensajes por usuario por minuto — evita que una cuenta comprometida
+// o un bug de cliente drene la cuota de Groq con requests en bucle.
+const RATE_LIMIT_PER_MINUTE = 8
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
   'Access-Control-Allow-Methods': 'POST, OPTIONS'
+}
+
+function getUserIdFromAuthHeader(req: Request): string | null {
+  const auth = req.headers.get('Authorization')
+  if (!auth?.startsWith('Bearer ')) return null
+  try {
+    const token = auth.slice(7)
+    const payload = JSON.parse(atob(token.split('.')[1]))
+    return payload.sub ?? null
+  } catch {
+    return null
+  }
 }
 
 serve(async (req) => {
@@ -32,6 +51,22 @@ serve(async (req) => {
 
     if (!GROQ_API_KEY) {
       throw new Error("GROQ_API_KEY no está configurada en las variables de entorno de Supabase.")
+    }
+
+    const userId = getUserIdFromAuthHeader(req)
+    if (userId && SUPABASE_URL && SUPABASE_SERVICE_ROLE_KEY) {
+      const supabaseAdmin = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY)
+      const windowStart = new Date(Math.floor(Date.now() / 60000) * 60000).toISOString()
+      const { data: requestCount, error: rateLimitError } = await supabaseAdmin.rpc(
+        'check_and_increment_rate_limit',
+        { p_user_id: userId, p_endpoint: 'elite-coach', p_window_start: windowStart }
+      )
+      if (!rateLimitError && requestCount > RATE_LIMIT_PER_MINUTE) {
+        return new Response(JSON.stringify({ error: 'Demasiadas consultas seguidas. Espera un minuto y vuelve a intentar.' }), {
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+          status: 429
+        })
+      }
     }
 
     const systemPrompt = `Eres Elite Coach, un entrenador de fuerza e hipertrofia profesional exclusivo de Elite Gym Tracker.

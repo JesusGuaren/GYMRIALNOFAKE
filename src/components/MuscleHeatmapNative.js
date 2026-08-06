@@ -1,7 +1,72 @@
 import React, { useMemo, useEffect, useRef } from 'react';
-import { View, Text, StyleSheet, Animated } from 'react-native';
+import { View, Text, StyleSheet, Animated, Pressable } from 'react-native';
 import Svg, { Polygon, G } from 'react-native-svg';
 import { normalizeMuscleGroup, SUB_TO_PRIMARY_MAPPING } from '../constants/Muscles';
+
+// El SVG del cuerpo se dibuja en este tamaño lógico (debe respetar la
+// proporción del viewBox de más abajo para que no quede espacio muerto).
+const SVG_WIDTH = 136;
+const SVG_HEIGHT = 300;
+const VIEWBOX_WIDTH = 100;
+const VIEWBOX_HEIGHT = 220;
+
+// Ray casting: ¿el punto (x,y) cae dentro del polígono "x1 y1 x2 y2 ..."?
+const pointInPolygon = (x, y, pointsStr) => {
+  const pts = pointsStr.trim().split(/\s+/).map(Number);
+  const n = pts.length / 2;
+  let inside = false;
+  for (let i = 0, j = n - 1; i < n; j = i++) {
+    const xi = pts[i * 2], yi = pts[i * 2 + 1];
+    const xj = pts[j * 2], yj = pts[j * 2 + 1];
+    const intersects = (yi > y) !== (yj > y) &&
+      x < ((xj - xi) * (y - yi)) / (yj - yi) + xi;
+    if (intersects) inside = !inside;
+  }
+  return inside;
+};
+
+const polygonCentroid = (pointsStr) => {
+  const pts = pointsStr.trim().split(/\s+/).map(Number);
+  const n = pts.length / 2;
+  let sx = 0, sy = 0;
+  for (let i = 0; i < n; i++) {
+    sx += pts[i * 2];
+    sy += pts[i * 2 + 1];
+  }
+  return { x: sx / n, y: sy / n };
+};
+
+// Encuentra a qué músculo pertenece un toque en coordenadas del viewBox.
+// Los polígonos de brazos/hombros/piernas son delgados y el dedo humano no
+// es preciso al pixel, así que si el toque no cae EXACTO dentro de ningún
+// polígono, se elige el más cercano dentro de un radio de tolerancia — en
+// vez de depender del hit-testing nativo de cada <Polygon> (poco confiable
+// para formas finas, ver bug reportado de toques que no registraban nada).
+const NEAREST_MUSCLE_TOLERANCE = 12;
+
+const findMuscleAtPoint = (paths, x, y) => {
+  for (const p of paths) {
+    if (p.muscle === 'Head') continue;
+    for (const pts of p.points) {
+      if (pointInPolygon(x, y, pts)) return p.muscle;
+    }
+  }
+
+  let nearestMuscle = null;
+  let nearestDist = Infinity;
+  for (const p of paths) {
+    if (p.muscle === 'Head') continue;
+    for (const pts of p.points) {
+      const c = polygonCentroid(pts);
+      const dist = Math.hypot(c.x - x, c.y - y);
+      if (dist < nearestDist) {
+        nearestDist = dist;
+        nearestMuscle = p.muscle;
+      }
+    }
+  }
+  return nearestDist <= NEAREST_MUSCLE_TOLERANCE ? nearestMuscle : null;
+};
 
 const ANTERIOR_PATHS = [
   { muscle: 'Chest', points: ["51.8 41.6 51 55.1 58 58 67.8 55.5 70.6 47.3 62 41.6", "29.8 46.5 31.4 55.5 40.8 58 48.2 55.1 47.8 42 37.6 42"] },
@@ -93,28 +158,39 @@ export default function MuscleHeatmapNative({ workouts, colors, selectedMuscle, 
     return colors.accent;
   };
 
-  const renderModel = (paths, scaleVal, opacityVal) => (
-    <Animated.View style={{ transform: [{ scale: scaleVal }], opacity: opacityVal, alignItems: 'center' }}>
-      <Svg width="150" height="230" viewBox="0 0 100 220">
-        <G>
-          {paths.map((p, i) => (
-            <G key={i}>
-              {p.points.map((points, j) => (
-                <Polygon 
-                   key={`${i}-${j}`} 
-                   points={points} 
-                   fill={p.muscle === 'Head' ? '#050811' : getIntensityColor(p.muscle)} 
-                   stroke={selectedMuscle === p.muscle ? '#ffffff' : (selectedMuscle ? 'transparent' : '#020617')} 
-                   strokeWidth={selectedMuscle === p.muscle ? '2' : (selectedMuscle ? '0' : '0.75')}
-                   onPress={() => p.muscle !== 'Head' && onSelectMuscle && onSelectMuscle(p.muscle)}
-                />
+  const renderModel = (paths, scaleVal, opacityVal) => {
+    const handlePress = (evt) => {
+      const { locationX, locationY } = evt.nativeEvent;
+      const x = (locationX / SVG_WIDTH) * VIEWBOX_WIDTH;
+      const y = (locationY / SVG_HEIGHT) * VIEWBOX_HEIGHT;
+      const muscle = findMuscleAtPoint(paths, x, y);
+      if (muscle && onSelectMuscle) onSelectMuscle(muscle);
+    };
+
+    return (
+      <Pressable onPress={handlePress} style={{ width: SVG_WIDTH, height: SVG_HEIGHT }}>
+        <Animated.View style={{ transform: [{ scale: scaleVal }], opacity: opacityVal, alignItems: 'center' }}>
+          <Svg width={SVG_WIDTH} height={SVG_HEIGHT} viewBox={`0 0 ${VIEWBOX_WIDTH} ${VIEWBOX_HEIGHT}`}>
+            <G>
+              {paths.map((p, i) => (
+                <G key={i}>
+                  {p.points.map((points, j) => (
+                    <Polygon
+                       key={`${i}-${j}`}
+                       points={points}
+                       fill={p.muscle === 'Head' ? '#050811' : getIntensityColor(p.muscle)}
+                       stroke={selectedMuscle === p.muscle ? '#ffffff' : (selectedMuscle ? 'transparent' : '#020617')}
+                       strokeWidth={selectedMuscle === p.muscle ? '2' : (selectedMuscle ? '0' : '0.75')}
+                    />
+                  ))}
+                </G>
               ))}
             </G>
-          ))}
-        </G>
-      </Svg>
-    </Animated.View>
-  );
+          </Svg>
+        </Animated.View>
+      </Pressable>
+    );
+  };
 
   return (
     <View style={[styles.container, { backgroundColor: colors.card, borderColor: colors.border }]}>

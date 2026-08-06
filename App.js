@@ -19,6 +19,7 @@ LogBox.ignoreLogs([
   'AuthApiError: Invalid Refresh Token: Refresh Token Not Found'
 ]);
 import GlobalRestTimer from './src/components/RestTimer';
+import ErrorBoundary from './src/components/ErrorBoundary';
 import { registerForPushNotificationsAsync } from './src/services/NotificationService';
 
 // Import NativeWind styles
@@ -199,12 +200,14 @@ export default function App() {
   }
 
   return (
-    <SafeAreaProvider>
-      <NavigationContainer>
-        <AppNavigator user={user} />
-      </NavigationContainer>
-      <GlobalRestTimer />
-      <StatusBar style="light" />
-    </SafeAreaProvider>
+    <ErrorBoundary>
+      <SafeAreaProvider>
+        <NavigationContainer>
+          <AppNavigator user={user} />
+        </NavigationContainer>
+        <GlobalRestTimer />
+        <StatusBar style="light" />
+      </SafeAreaProvider>
+    </ErrorBoundary>
   );
 }
