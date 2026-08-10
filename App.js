@@ -1,5 +1,6 @@
 import 'react-native-reanimated';
 import React, { useEffect } from 'react';
+import * as Sentry from '@sentry/react-native';
 import { NavigationContainer } from '@react-navigation/native';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { StatusBar } from 'expo-status-bar';
@@ -18,6 +19,15 @@ LogBox.ignoreLogs([
   'expo-notifications: Android Push notifications',
   'AuthApiError: Invalid Refresh Token: Refresh Token Not Found'
 ]);
+
+// Sin EXPO_PUBLIC_SENTRY_DSN configurado, Sentry queda inactivo (no rompe nada en dev).
+const SENTRY_DSN = process.env.EXPO_PUBLIC_SENTRY_DSN;
+if (SENTRY_DSN) {
+  Sentry.init({
+    dsn: SENTRY_DSN,
+    tracesSampleRate: 0.2,
+  });
+}
 import GlobalRestTimer from './src/components/RestTimer';
 import ErrorBoundary from './src/components/ErrorBoundary';
 import { registerForPushNotificationsAsync } from './src/services/NotificationService';
@@ -41,7 +51,7 @@ const parseUrlParams = (url) => {
   return params;
 };
 
-export default function App() {
+function App() {
   const { setUser, setSessionChecked, sessionChecked, user, fetchExercises, fetchWorkouts } = useStore();
 
   const [fontsLoaded] = useFonts({
@@ -169,6 +179,8 @@ export default function App() {
   }, []);
 
   useEffect(() => {
+    Sentry.setUser(user ? { id: user.id } : null);
+
     if (user) {
       fetchExercises();
       fetchWorkouts();
@@ -211,3 +223,5 @@ export default function App() {
     </ErrorBoundary>
   );
 }
+
+export default Sentry.wrap(App);

@@ -12,7 +12,8 @@
         "buildType": "apk"
       },
       "env": {
-        "NPM_CONFIG_LEGACY_PEER_DEPS": "true"
+        "NPM_CONFIG_LEGACY_PEER_DEPS": "true",
+        "EXPO_PUBLIC_SENTRY_DSN": "https://91db3d65ca3e53f9c5f5491b3fb530b4@o4511867106361344.ingest.us.sentry.io/4511867156299776"
       }
     },
     "preview": {
@@ -23,7 +24,8 @@
         "gradleCommand": ":app:assembleRelease"
       },
       "env": {
-        "NPM_CONFIG_LEGACY_PEER_DEPS": "true"
+        "NPM_CONFIG_LEGACY_PEER_DEPS": "true",
+        "EXPO_PUBLIC_SENTRY_DSN": "https://91db3d65ca3e53f9c5f5491b3fb530b4@o4511867106361344.ingest.us.sentry.io/4511867156299776"
       }
     },
     "production": {
@@ -32,7 +34,8 @@
         "buildType": "app-bundle"
       },
       "env": {
-        "NPM_CONFIG_LEGACY_PEER_DEPS": "true"
+        "NPM_CONFIG_LEGACY_PEER_DEPS": "true",
+        "EXPO_PUBLIC_SENTRY_DSN": "https://91db3d65ca3e53f9c5f5491b3fb530b4@o4511867106361344.ingest.us.sentry.io/4511867156299776"
       }
     }
   },

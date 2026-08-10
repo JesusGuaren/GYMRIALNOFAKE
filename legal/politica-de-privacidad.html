@@ -1,0 +1,372 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Política de Privacidad — Elite Gym Tracker</title>
+<style>
+  :root {
+    --bg: #f7f8fa;
+    --bg-subtle: #eef1f5;
+    --card: #ffffff;
+    --border: #dde2e9;
+    --text: #1b2230;
+    --text-dim: #5b6472;
+    --accent: #1d6fd6;
+    --accent-soft: #e8f0fd;
+    --warn: #a3620a;
+    --warn-soft: #fdf1dc;
+  }
+
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg: #0b0f16;
+      --bg-subtle: #10151f;
+      --card: #131a26;
+      --border: #232c3b;
+      --text: #e4e8ef;
+      --text-dim: #8c96a6;
+      --accent: #5b9bf0;
+      --accent-soft: rgba(91, 155, 240, 0.13);
+      --warn: #e0ac52;
+      --warn-soft: rgba(224, 172, 82, 0.13);
+    }
+  }
+  :root[data-theme="dark"] {
+    --bg: #0b0f16;
+    --bg-subtle: #10151f;
+    --card: #131a26;
+    --border: #232c3b;
+    --text: #e4e8ef;
+    --text-dim: #8c96a6;
+    --accent: #5b9bf0;
+    --accent-soft: rgba(91, 155, 240, 0.13);
+    --warn: #e0ac52;
+    --warn-soft: rgba(224, 172, 82, 0.13);
+  }
+  :root[data-theme="light"] {
+    --bg: #f7f8fa;
+    --bg-subtle: #eef1f5;
+    --card: #ffffff;
+    --border: #dde2e9;
+    --text: #1b2230;
+    --text-dim: #5b6472;
+    --accent: #1d6fd6;
+    --accent-soft: #e8f0fd;
+    --warn: #a3620a;
+    --warn-soft: #fdf1dc;
+  }
+
+  * { box-sizing: border-box; }
+
+  body {
+    margin: 0;
+    background: var(--bg);
+    color: var(--text);
+    font-family: "Iowan Old Style", "Palatino Linotype", Palatino, Georgia, "Times New Roman", serif;
+    line-height: 1.65;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  .wrap {
+    max-width: 720px;
+    margin: 0 auto;
+    padding: 64px 24px 96px;
+  }
+
+  header {
+    margin-bottom: 44px;
+    padding-bottom: 28px;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .eyebrow {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    font-size: 0.72rem;
+    font-weight: 600;
+    letter-spacing: 0.11em;
+    text-transform: uppercase;
+    color: var(--accent);
+    margin-bottom: 14px;
+  }
+  .eyebrow::before {
+    content: "";
+    width: 7px;
+    height: 7px;
+    border-radius: 50%;
+    background: var(--accent);
+    flex-shrink: 0;
+  }
+
+  h1 {
+    font-size: 2.1rem;
+    font-weight: 600;
+    letter-spacing: -0.01em;
+    margin: 0 0 8px;
+    text-wrap: balance;
+  }
+
+  .meta {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    color: var(--text-dim);
+    font-size: 0.9rem;
+  }
+
+  h2 {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    font-size: 0.82rem;
+    font-weight: 700;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: var(--text-dim);
+    margin: 48px 0 16px;
+    display: flex;
+    align-items: baseline;
+    gap: 10px;
+  }
+  h2 .num {
+    color: var(--accent);
+    font-variant-numeric: tabular-nums;
+  }
+
+  p, li {
+    color: var(--text);
+    font-size: 1.05rem;
+    max-width: 62ch;
+  }
+
+  ul { padding-left: 22px; margin: 12px 0; }
+  li { margin-bottom: 8px; }
+
+  strong { font-weight: 600; }
+
+  .card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    overflow: hidden;
+    margin: 16px 0;
+  }
+
+  .provider-list {
+    list-style: none;
+    padding: 0;
+    margin: 16px 0;
+    display: flex;
+    flex-direction: column;
+    gap: 1px;
+    background: var(--border);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    overflow: hidden;
+  }
+  .provider-list li {
+    background: var(--card);
+    padding: 14px 18px;
+    margin: 0;
+  }
+  .provider-list strong {
+    color: var(--accent);
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    font-size: 0.95rem;
+    display: block;
+    margin-bottom: 3px;
+  }
+
+  .table-scroll {
+    overflow-x: auto;
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    margin: 16px 0;
+  }
+  table {
+    width: 100%;
+    min-width: 560px;
+    border-collapse: collapse;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    font-size: 0.9rem;
+    background: var(--card);
+  }
+  th, td {
+    text-align: left;
+    padding: 12px 16px;
+    border-bottom: 1px solid var(--border);
+    vertical-align: top;
+  }
+  tr:last-child td { border-bottom: none; }
+  th {
+    color: var(--text-dim);
+    font-weight: 600;
+    font-size: 0.72rem;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    background: var(--bg-subtle);
+  }
+  td:first-child { color: var(--text); font-weight: 600; white-space: nowrap; }
+
+  a { color: var(--accent); text-decoration-thickness: 1px; }
+  a:focus-visible, button:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+
+  .contact-box {
+    background: var(--accent-soft);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 20px;
+    margin-top: 12px;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    font-size: 0.95rem;
+  }
+
+  code {
+    font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+    background: var(--bg-subtle);
+    padding: 2px 6px;
+    border-radius: 4px;
+    font-size: 0.88em;
+  }
+
+  footer {
+    margin-top: 56px;
+    padding-top: 20px;
+    border-top: 1px solid var(--border);
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    font-size: 0.82rem;
+    color: var(--text-dim);
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <header>
+    <div class="eyebrow">Elite Gym Tracker</div>
+    <h1>Política de Privacidad</h1>
+    <p class="meta">Última actualización: 6 de agosto de 2026</p>
+  </header>
+
+  <p>
+    Esta política explica qué datos recolecta <strong>Elite Gym Tracker</strong> (la "App"), para qué se usan,
+    con quién se comparten y qué derechos tenés sobre tus datos. La App está desarrollada por
+    Jesús Guaren (Chile) y se distribuye actualmente como descarga directa desde
+    <a href="https://jesusvidaldev.netlify.app/">jesusvidaldev.netlify.app</a>.
+  </p>
+
+  <h2><span class="num">01</span> Quién es responsable de tus datos</h2>
+  <p>
+    Jesús Guaren, desarrollador independiente de Elite Gym Tracker, es responsable del tratamiento
+    de los datos descritos en esta política. Para cualquier consulta, podés escribir a
+    <a href="mailto:jesusvidalfue123@gmail.com">jesusvidalfue123@gmail.com</a>.
+  </p>
+
+  <h2><span class="num">02</span> Qué datos recolectamos</h2>
+  <p>Solo recolectamos lo necesario para que la App funcione. No vendemos datos a terceros ni los usamos con fines publicitarios.</p>
+
+  <div class="table-scroll">
+    <table>
+      <tr><th>Categoría</th><th>Datos concretos</th><th>Para qué se usan</th></tr>
+      <tr>
+        <td>Cuenta</td>
+        <td>Email y contraseña (o cuenta de Google si iniciás sesión con Google: email, nombre y foto de perfil)</td>
+        <td>Crear tu cuenta, iniciar sesión y recuperar el acceso si olvidás tu contraseña</td>
+      </tr>
+      <tr>
+        <td>Perfil</td>
+        <td>Peso, altura, edad, sexo, nivel de actividad, objetivo (hipertrofia/fuerza/etc.) y nivel de experiencia</td>
+        <td>Calcular tus necesidades calóricas estimadas y personalizar recomendaciones de entrenamiento</td>
+      </tr>
+      <tr>
+        <td>Entrenamientos</td>
+        <td>Rutinas, ejercicios, series, repeticiones, pesos levantados, RPE y fechas de cada sesión</td>
+        <td>Mostrar tu historial, progreso, rankings de fuerza y logros dentro de la App</td>
+      </tr>
+      <tr>
+        <td>Peso corporal</td>
+        <td>Registros históricos de peso, % de grasa corporal (opcional) y notas</td>
+        <td>Graficar tu evolución de peso corporal en el tiempo</td>
+      </tr>
+      <tr>
+        <td>Coach IA (chat)</td>
+        <td>Los mensajes que le escribís al Elite Coach, junto con un resumen de tu actividad reciente</td>
+        <td>Generar respuestas y recomendaciones personalizadas usando un modelo de lenguaje de terceros (ver sección 3)</td>
+      </tr>
+    </table>
+  </div>
+
+  <h2><span class="num">03</span> Con quién compartimos datos</h2>
+  <p>
+    No compartimos tus datos con nadie salvo los proveedores técnicos necesarios para que la App
+    funcione. Cada uno procesa solo lo que necesita para su función específica:
+  </p>
+  <ul class="provider-list">
+    <li><strong>Supabase</strong> Aloja la base de datos y gestiona la autenticación (email/contraseña y Google). Es donde vive toda tu información de cuenta, perfil y entrenamientos, protegida con políticas de acceso que aseguran que solo vos podés leer o modificar tus propios datos.</li>
+    <li><strong>Google</strong> Si elegís "Continuar con Google", Google nos comparte tu email, nombre y foto de perfil para crear/identificar tu cuenta. No accedemos a ningún otro dato de tu cuenta de Google.</li>
+    <li><strong>Groq</strong> Procesa los mensajes que le enviás al Elite Coach para generar la respuesta del asistente de IA. Los mensajes se envían a Groq únicamente en el momento en que usás el chat.</li>
+    <li><strong>Brevo</strong> Envía los correos transaccionales de la App (confirmación de cuenta, recuperación de contraseña). Solo recibe tu email y el contenido del correo correspondiente.</li>
+    <li><strong>Expo (EAS Update)</strong> Distribuye actualizaciones de la App directamente a tu dispositivo sin pasar por una tienda de aplicaciones.</li>
+    <li><strong>Sentry</strong> Recibe reportes automáticos cuando la App falla inesperadamente (mensaje de error, dónde ocurrió y un identificador interno de tu cuenta, sin tu email ni nombre) para que podamos detectar y corregir errores.</li>
+  </ul>
+  <p>
+    Ninguno de estos proveedores tiene autorización para usar tus datos con fines propios de publicidad o marketing.
+  </p>
+
+  <h2><span class="num">04</span> Qué no hacemos</h2>
+  <ul>
+    <li>No usamos redes de publicidad ni SDKs de tracking/analítica de terceros.</li>
+    <li>No vendemos ni alquilamos tus datos a nadie.</li>
+    <li>No compartimos tu información de entrenamiento con otros usuarios sin tu acción explícita.</li>
+  </ul>
+
+  <h2><span class="num">05</span> Seguridad</h2>
+  <p>
+    Toda la comunicación entre la App y nuestros servidores viaja cifrada (HTTPS). La base de datos
+    usa políticas de seguridad a nivel de fila (Row Level Security), lo que significa que, incluso
+    a nivel de infraestructura, ningún usuario puede leer o modificar los datos de otro usuario.
+    El acceso al asistente de IA está limitado por usuario para evitar abusos.
+  </p>
+
+  <h2><span class="num">06</span> Cuánto tiempo guardamos tus datos</h2>
+  <p>
+    Guardamos tus datos mientras tu cuenta exista. Si eliminás tu cuenta, tus datos personales,
+    de perfil, entrenamientos y peso corporal se eliminan de forma permanente.
+  </p>
+
+  <h2><span class="num">07</span> Tus derechos</h2>
+  <p>Podés en cualquier momento:</p>
+  <ul>
+    <li>Acceder a los datos que tenemos sobre vos.</li>
+    <li>Corregir información desactualizada o incorrecta (la mayoría, directamente desde la sección Perfil de la App).</li>
+    <li>Solicitar la eliminación completa de tu cuenta y todos tus datos.</li>
+  </ul>
+  <div class="contact-box">
+    Para ejercer cualquiera de estos derechos, escribinos a
+    <a href="mailto:jesusvidalfue123@gmail.com">jesusvidalfue123@gmail.com</a>
+    indicando el email asociado a tu cuenta. Responderemos en un plazo razonable.
+  </div>
+
+  <h2><span class="num">08</span> Menores de edad</h2>
+  <p>
+    Elite Gym Tracker no está dirigida a menores de 13 años y no recolectamos datos a sabiendas
+    de usuarios menores de esa edad.
+  </p>
+
+  <h2><span class="num">09</span> Cambios a esta política</h2>
+  <p>
+    Si actualizamos esta política de forma significativa, lo indicaremos actualizando la fecha
+    en la parte superior de esta página. Te recomendamos revisarla ocasionalmente.
+  </p>
+
+  <h2><span class="num">10</span> Contacto</h2>
+  <div class="contact-box">
+    Jesús Guaren — <a href="mailto:jesusvidalfue123@gmail.com">jesusvidalfue123@gmail.com</a>
+  </div>
+
+  <footer>
+    Elite Gym Tracker · Documento legal de uso interno de la App, publicado en jesusvidaldev.netlify.app
+  </footer>
+
+</div>
+</body>
+</html>

@@ -1,5 +1,6 @@
 import React from 'react';
 import { View, Text, TouchableOpacity } from 'react-native';
+import * as Sentry from '@sentry/react-native';
 
 // Red de seguridad para crashes en producción: sin esto, un error de render
 // deja al usuario con una pantalla en blanco sin forma de recuperarse.
@@ -15,6 +16,9 @@ export default class ErrorBoundary extends React.Component {
 
   componentDidCatch(error, info) {
     console.error('Unhandled render error:', error, info?.componentStack);
+    Sentry.captureException(error, {
+      contexts: { react: { componentStack: info?.componentStack } },
+    });
   }
 
   handleReset = () => {
