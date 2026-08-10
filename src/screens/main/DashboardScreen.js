@@ -1,6 +1,6 @@
 import React, { useMemo, useState, useEffect, useRef } from 'react';
 import { View, Text, ScrollView, TouchableOpacity, TextInput } from 'react-native';
-import { Dumbbell, Flame, LogOut, User as UserIcon, ChevronRight, BookOpen, Sparkles, Bot, X, Send, Trophy, Zap, MessageSquare, Plus, Calculator } from 'lucide-react-native';
+import { Dumbbell, Flame, LogOut, User as UserIcon, ChevronRight, BookOpen, Sparkles, Bot, X, Send, Trophy, Zap, MessageSquare, Plus, Calculator, BookMarked } from 'lucide-react-native';
 import * as Haptics from 'expo-haptics';
 import useStore, { THEMES } from '../../store/useStore';
 import { getBestRankEver } from '../../lib/rankingSystem';
@@ -215,6 +215,15 @@ export default function DashboardScreen({ navigation }) {
             className="w-10 h-10 items-center justify-center"
           >
             <Calculator color={colors.accent} size={18} />
+          </TouchableOpacity>
+
+          <View style={{ width: 1, height: 20, backgroundColor: colors.border }} />
+
+          <TouchableOpacity
+            onPress={() => navigation.navigate('TrainingMethods')}
+            className="w-10 h-10 items-center justify-center"
+          >
+            <BookMarked color={colors.accent} size={18} />
           </TouchableOpacity>
 
           <View style={{ width: 1, height: 20, backgroundColor: colors.border }} />

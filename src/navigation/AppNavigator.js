@@ -24,6 +24,7 @@ import RoutineManagerScreen from '../screens/main/RoutineManagerScreen';
 import RoutineEditScreen from '../screens/main/RoutineEditScreen';
 import ProgramManagerScreen from '../screens/main/ProgramManagerScreen';
 import BodyMetricsScreen from '../screens/main/BodyMetricsScreen';
+import TrainingMethodsScreen from '../screens/main/TrainingMethodsScreen';
 
 const Tab = createBottomTabNavigator();
 const Stack = createNativeStackNavigator();
@@ -115,6 +116,7 @@ export default function AppNavigator({ user }) {
           <Stack.Screen name="RoutineEdit" component={RoutineEditScreen} />
           <Stack.Screen name="ProgramManager" component={ProgramManagerScreen} />
           <Stack.Screen name="BodyMetrics" component={BodyMetricsScreen} />
+          <Stack.Screen name="TrainingMethods" component={TrainingMethodsScreen} />
           <Stack.Screen 
             name="Coach" 
             component={CoachScreen} 

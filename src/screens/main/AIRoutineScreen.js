@@ -1,9 +1,10 @@
 import React, { useState } from 'react';
 import { View, Text, TouchableOpacity, ScrollView, Platform, Alert, ActivityIndicator } from 'react-native';
-import { ChevronLeft, Calendar, Sparkles, ChevronRight, Zap, Target, BookOpen } from 'lucide-react-native';
+import { ChevronLeft, Calendar, Sparkles, ChevronRight, Zap, Target, BookOpen, BookMarked, Info } from 'lucide-react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import useStore, { THEMES } from '../../store/useStore';
 import { generateAIRoutine, getMuscleSpanish } from '../../services/AIRoutineGenerator';
+import { APPLICABLE_TRAINING_METHODS } from '../../constants/TrainingMethods';
 import Animated, { FadeIn, SlideInRight } from 'react-native-reanimated';
 
 export default function AIRoutineScreen({ navigation }) {
@@ -20,6 +21,7 @@ export default function AIRoutineScreen({ navigation }) {
   const [daysPerWeek, setDaysPerWeek] = useState(3); // 2 to 6
   const [equipment, setEquipment] = useState(['barbell', 'dumbbell', 'cables']); // barbell, dumbbell, cables, bodyweight, machine
   const [focusMuscles, setFocusMuscles] = useState([]); // Array of muscles
+  const [trainingMethod, setTrainingMethod] = useState(null); // null = estándar, o id de TRAINING_METHODS
   const [generatedProgram, setGeneratedProgram] = useState(null);
 
   // Músculos disponibles para enfocar
@@ -55,7 +57,8 @@ export default function AIRoutineScreen({ navigation }) {
           daysPerWeek,
           equipment,
           focusMuscles,
-          exercisesDb
+          exercisesDb,
+          trainingMethod
         });
         setGeneratedProgram(program);
         setStep(5); // Ir al paso de Preview
@@ -190,6 +193,59 @@ export default function AIRoutineScreen({ navigation }) {
                   </TouchableOpacity>
                 ))}
               </View>
+            </View>
+
+            {/* Selector de Método de Entrenamiento (Opcional) */}
+            <View className="mt-4">
+              <View className="flex-row items-center justify-between mb-1">
+                <Text className="text-white font-bold text-base">Estilo del ejercicio principal (opcional)</Text>
+                <TouchableOpacity
+                  onPress={() => navigation.navigate('TrainingMethods')}
+                  className="flex-row items-center gap-x-1"
+                >
+                  <Info size={12} color="#64748b" />
+                  <Text className="text-slate-500 text-[10px] font-bold underline">Ver detalles</Text>
+                </TouchableOpacity>
+              </View>
+              <Text className="text-slate-400 text-xs leading-relaxed font-medium mb-3">
+                Aplica un protocolo específico al primer ejercicio pesado de cada día. Dejalo en "Estándar" si preferís que la IA decida por objetivo.
+              </Text>
+              <ScrollView horizontal showsHorizontalScrollIndicator={false} className="-mx-1">
+                <View className="flex-row gap-x-2 px-1">
+                  <TouchableOpacity
+                    onPress={() => setTrainingMethod(null)}
+                    className="px-4 py-3 rounded-xl border items-center justify-center"
+                    style={trainingMethod === null ? { backgroundColor: colors.accent, borderColor: colors.accent } : { backgroundColor: colors.card, borderColor: colors.border }}
+                  >
+                    <Text className="text-[10px] font-black tracking-wider" style={{ color: trainingMethod === null ? colors.accentText : '#94a3b8' }}>
+                      ESTÁNDAR
+                    </Text>
+                  </TouchableOpacity>
+                  {APPLICABLE_TRAINING_METHODS.map(method => {
+                    const isSelected = trainingMethod === method.id;
+                    return (
+                      <TouchableOpacity
+                        key={method.id}
+                        onPress={() => setTrainingMethod(isSelected ? null : method.id)}
+                        className="px-4 py-3 rounded-xl border items-center justify-center"
+                        style={isSelected ? { backgroundColor: colors.accent, borderColor: colors.accent } : { backgroundColor: colors.card, borderColor: colors.border }}
+                      >
+                        <Text className="text-[10px] font-black tracking-wider" style={{ color: isSelected ? colors.accentText : '#94a3b8' }}>
+                          {method.name.toUpperCase()}
+                        </Text>
+                      </TouchableOpacity>
+                    );
+                  })}
+                </View>
+              </ScrollView>
+              {trainingMethod && (
+                <View className="mt-3 p-3 rounded-xl flex-row gap-x-2" style={{ backgroundColor: `${colors.accent}0D` }}>
+                  <BookMarked size={12} color={colors.accent} style={{ marginTop: 1 }} />
+                  <Text className="text-slate-400 text-[11px] leading-relaxed flex-1">
+                    {APPLICABLE_TRAINING_METHODS.find(m => m.id === trainingMethod)?.tagline}
+                  </Text>
+                </View>
+              )}
             </View>
           </Animated.View>
         )}

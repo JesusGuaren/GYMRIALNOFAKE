@@ -291,8 +291,8 @@ const useStore = create(
       const routineExercises = day.exercises.map((ex, exIdx) => ({
         routine_id: routine.id,
         exercise_id: ex.exercise_id,
-        default_sets: 3,
-        default_reps: 10,
+        default_sets: ex.default_sets || 3,
+        default_reps: ex.default_reps || 10,
         order_index: exIdx,
         superset_id: ex.supersetId || null
       }));

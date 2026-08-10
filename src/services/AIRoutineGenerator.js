@@ -92,6 +92,7 @@ const BIO_EXERCISES = {
 };
 
 import { normalizeMuscleGroup, translateMuscleGroup } from '../constants/Muscles';
+import { getTrainingMethodById } from '../constants/TrainingMethods';
 
 export const getMuscleSpanish = (key) => {
   if (key === 'Core') return 'Abdomen / Core';
@@ -235,9 +236,14 @@ const PROGRAM_STRUCTURES = {
 /**
  * Genera rutinas lógicas con nombres estandarizados en español y mapeo inteligente flexible a Supabase.
  */
-export const generateAIRoutine = ({ goal, level, daysPerWeek, equipment = [], focusMuscles = [], exercisesDb = [] }) => {
+export const generateAIRoutine = ({ goal, level, daysPerWeek, equipment = [], focusMuscles = [], exercisesDb = [], trainingMethod = null }) => {
   const structure = PROGRAM_STRUCTURES[daysPerWeek] || PROGRAM_STRUCTURES[3];
   const generatedDays = [];
+  // Perfil del método elegido (solo los que tienen generatorProfile son aplicables aquí,
+  // ej. Bilbo/5x5/GVT/5-3-1); se aplica UNA vez por día, al primer compuesto pesado del
+  // día que no sea ya un ejercicio de especialización, imitando cómo se usa en la vida real:
+  // un solo "ejercicio principal" por sesión, el resto sigue con la lógica normal de sets/reps.
+  const methodProfile = trainingMethod ? getTrainingMethodById(trainingMethod)?.generatorProfile : null;
 
   const findExerciseInDb = (exerciseName, patternKey) => {
     let normalizedTarget = exerciseName.toLowerCase();
@@ -284,6 +290,7 @@ export const generateAIRoutine = ({ goal, level, daysPerWeek, equipment = [], fo
   structure.days.forEach((day) => {
     let dayExercises = [];
     const usedExerciseNames = new Set();
+    let mainLiftAssignedForDay = false;
 
     // 1. ANÁLISIS DE ENFOQUE MUSCULAR DE ALTA INTENSIDAD (ESPECIALIZACIÓN)
     // Verificar si en este día se entrenan los grupos prioritarios seleccionados.
@@ -356,8 +363,14 @@ export const generateAIRoutine = ({ goal, level, daysPerWeek, equipment = [], fo
             let notes = '';
 
             const isHeavyCompound = pattern.includes('Horizontal') || pattern.includes('Vertical') || pattern.includes('KneeDominant') || pattern.includes('HipDominant');
+            const appliesMethodHere = !!methodProfile && isHeavyCompound && !hasFocusOnThisPattern && !mainLiftAssignedForDay;
 
-            if (goal === 'Strength') {
+            if (appliesMethodHere) {
+              sets = methodProfile.setsCount;
+              reps = methodProfile.repsRange;
+              notes = methodProfile.notes;
+              mainLiftAssignedForDay = true;
+            } else if (goal === 'Strength') {
               if (isHeavyCompound) {
                 sets = level === 'Advanced' ? 5 : level === 'Intermediate' ? 4 : 3;
                 reps = '4-6';
@@ -462,13 +475,15 @@ export const generateAIRoutine = ({ goal, level, daysPerWeek, equipment = [], fo
     return 'Resistencia & Definición';
   };
 
+  const methodName = trainingMethod ? getTrainingMethodById(trainingMethod)?.name : null;
+
   return {
-    name: `IA: ${structure.name} (${getGoalName()})`,
+    name: `IA: ${structure.name} (${getGoalName()})${methodName ? ` · ${methodName}` : ''}`,
     description: `Programa personalizado de nivel ${
       level === 'Beginner' ? 'Novato' : level === 'Intermediate' ? 'Intermedio' : 'Avanzado'
     }. Foco muscular prioritario: ${
       focusMuscles.length > 0 ? focusMuscles.map(m => getMuscleSpanish(m)).join(', ') : 'Desarrollo Equilibrado'
-    }.`,
+    }.${methodName ? ` Ejercicio principal de cada día ajustado con el protocolo ${methodName}.` : ''}`,
     days: generatedDays
   };
 };

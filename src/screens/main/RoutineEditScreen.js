@@ -102,16 +102,28 @@ export default function RoutineEditScreen({ navigation, route }) {
     setHasChanges(true);
   };
 
+  // Un bloque de superserie soporta hasta 3 ejercicios (pareja o trío).
+  const MAX_SUPERSET_SIZE = 3;
+
+  const getSupersetGroupSize = (list, supersetId) =>
+    supersetId ? list.filter(e => e.supersetId === supersetId).length : 0;
+
   const moveExercise = (idx, direction) => {
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
     const targetIdx = direction === 'up' ? idx - 1 : idx + 1;
     if (targetIdx < 0 || targetIdx >= exercises.length) return;
 
     const updated = [...exercises];
-    // Reordenar rompe la adyacencia que define una superserie, así que
-    // se desvincula en vez de dejar un supersetId "huérfano" e inconsistente.
-    if (updated[idx].supersetId) updated[idx] = { ...updated[idx], supersetId: null };
-    if (updated[targetIdx].supersetId) updated[targetIdx] = { ...updated[targetIdx], supersetId: null };
+    // Reordenar rompe la adyacencia que define una superserie, así que se
+    // desvincula el grupo COMPLETO (no solo los 2 ejercicios movidos) para
+    // no dejar un trío partido en un par + un "huérfano" con el mismo id.
+    [updated[idx], updated[targetIdx]].forEach(item => {
+      if (!item.supersetId) return;
+      const groupId = item.supersetId;
+      for (let i = 0; i < updated.length; i++) {
+        if (updated[i].supersetId === groupId) updated[i] = { ...updated[i], supersetId: null };
+      }
+    });
 
     const temp = updated[idx];
     updated[idx] = updated[targetIdx];
@@ -121,8 +133,9 @@ export default function RoutineEditScreen({ navigation, route }) {
     setHasChanges(true);
   };
 
-  // Vincula/desvincula el ejercicio en idx con el siguiente (idx + 1) como superserie.
-  // Solo soporta parejas: un ejercicio no puede pertenecer a 2 superseries a la vez.
+  // Vincula el ejercicio en idx con el siguiente (idx + 1) como superserie, o lo
+  // suma a un bloque existente si idx ya es el último eslabón de uno (hasta
+  // formar un trío). Si ambos ya comparten grupo, desvincula el bloque entero.
   const toggleSuperset = (idx) => {
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
     const updated = [...exercises];
@@ -131,14 +144,18 @@ export default function RoutineEditScreen({ navigation, route }) {
     if (!b) return;
 
     if (a.supersetId && a.supersetId === b.supersetId) {
-      updated[idx] = { ...a, supersetId: null };
-      updated[idx + 1] = { ...b, supersetId: null };
+      const groupId = a.supersetId;
+      for (let i = 0; i < updated.length; i++) {
+        if (updated[i].supersetId === groupId) updated[i] = { ...updated[i], supersetId: null };
+      }
     } else if (!a.supersetId && !b.supersetId) {
       const supersetId = `ss_${Date.now()}`;
       updated[idx] = { ...a, supersetId };
       updated[idx + 1] = { ...b, supersetId };
+    } else if (a.supersetId && !b.supersetId && getSupersetGroupSize(updated, a.supersetId) < MAX_SUPERSET_SIZE) {
+      updated[idx + 1] = { ...b, supersetId: a.supersetId };
     } else {
-      return; // Uno de los dos ya pertenece a otra superserie
+      return; // Uno de los dos ya pertenece a otra superserie, o el bloque ya llegó al máximo
     }
 
     setExercises(updated);
@@ -260,8 +277,19 @@ export default function RoutineEditScreen({ navigation, route }) {
               {exercises.map((ex, idx) => {
                 const nextEx = exercises[idx + 1];
                 const isPairedWithNext = !!ex.supersetId && nextEx?.supersetId === ex.supersetId;
-                const isPairedWithPrev = idx > 0 && exercises[idx - 1].supersetId === ex.supersetId && !!ex.supersetId;
-                const canLinkNext = nextEx && !ex.supersetId && !nextEx.supersetId;
+                const canLinkNext = nextEx && !nextEx.supersetId && (
+                  !ex.supersetId || getSupersetGroupSize(exercises, ex.supersetId) < MAX_SUPERSET_SIZE
+                );
+                // Número de parte dentro del bloque: cuenta cuántos ejercicios contiguos
+                // anteriores comparten el mismo supersetId (los bloques siempre son contiguos
+                // por construcción: solo se extienden al final o se desvinculan enteros).
+                let supersetPartNumber = null;
+                if (ex.supersetId) {
+                  supersetPartNumber = 1;
+                  for (let i = idx - 1; i >= 0 && exercises[i].supersetId === ex.supersetId; i--) {
+                    supersetPartNumber++;
+                  }
+                }
 
                 return (
                 <React.Fragment key={ex.id}>
@@ -278,7 +306,7 @@ export default function RoutineEditScreen({ navigation, route }) {
                     <View className="flex-row items-center gap-x-1.5 mb-3 self-start px-2 py-1 rounded-lg bg-purple-500/10">
                       <Link2 size={10} color="#a855f7" />
                       <Text className="text-purple-400 text-[9px] font-black uppercase tracking-wider">
-                        Superserie {isPairedWithPrev ? '· Parte 2' : '· Parte 1'}
+                        Superserie · Parte {supersetPartNumber}
                       </Text>
                     </View>
                   )}
@@ -359,7 +387,9 @@ export default function RoutineEditScreen({ navigation, route }) {
                     ) : (
                       <>
                         <Link2 size={11} color="#64748b" />
-                        <Text className="text-slate-500 text-[9px] font-black uppercase tracking-wider">Vincular como superserie</Text>
+                        <Text className="text-slate-500 text-[9px] font-black uppercase tracking-wider">
+                          {ex.supersetId ? 'Añadir a la superserie (trío)' : 'Vincular como superserie'}
+                        </Text>
                       </>
                     )}
                   </TouchableOpacity>
