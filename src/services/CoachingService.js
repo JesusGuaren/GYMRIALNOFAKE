@@ -126,7 +126,7 @@ export const evaluateLiveSet = (weight, reps, rpe, type = 'Normal') => {
   if (r >= 7.5 && r <= 8.5) {
     return {
       type: 'maintain',
-      text: `RPE ${r}: Intensidad óptima (Sweet Spot). Mantén este peso.`,
+      text: `RPE ${r}: Intensidad óptima (punto justo). Mantén este peso.`,
       color: '#fbbf24'
     };
   }

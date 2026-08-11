@@ -33,6 +33,7 @@ export default function WorkoutSetupScreen({ navigation, route }) {
         name: re.exercises.name,
         muscle_group: re.exercises.muscle_group || 'Arms',
         supersetId: re.superset_id || null,
+        notes: re.notes || null,
         sets: buildPrefilledSets(lastSets, setCount).map(s => ({ ...s, isCompleted: false }))
       };
     });

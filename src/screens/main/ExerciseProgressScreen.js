@@ -6,6 +6,7 @@ import useStore, { THEMES } from '../../store/useStore';
 import { calculate1RM } from '../../lib/rankingSystem';
 import Animated, { FadeIn } from 'react-native-reanimated';
 import SimpleLineChart from '../../components/common/SimpleLineChart';
+import InfoHint from '../../components/common/InfoHint';
 
 export default function ExerciseProgressScreen({ route, navigation }) {
   const { id } = route.params;
@@ -67,7 +68,10 @@ export default function ExerciseProgressScreen({ route, navigation }) {
            <View className="flex-1 p-4 rounded-3xl border items-center" style={{ backgroundColor: colors.card, borderColor: colors.border }}>
               <Target size={16} color={colors.accent} className="mb-2" />
               <Text className="text-white text-lg font-black">{currentStats.rm1}kg</Text>
-              <Text className="text-slate-500 text-[8px] font-bold uppercase tracking-tighter">1RM Est.</Text>
+              <View className="flex-row items-center gap-x-1">
+                <Text className="text-slate-500 text-[8px] font-bold uppercase tracking-tighter">1RM Est.</Text>
+                <InfoHint size={9} title="¿Qué es el 1RM?" description="1RM = Una Repetición Máxima: el peso más pesado que estimamos que podrías levantar una sola vez, calculado a partir de tus series reales (peso x repeticiones)." />
+              </View>
            </View>
            <View className="flex-1 p-4 rounded-3xl border items-center" style={{ backgroundColor: colors.card, borderColor: colors.border }}>
               <TrendingUp size={16} color="#8b5cf6" className="mb-2" />
@@ -90,7 +94,10 @@ export default function ExerciseProgressScreen({ route, navigation }) {
           <View className="gap-y-8">
             <Animated.View entering={FadeIn.delay(100)} className="p-6 rounded-[32px] border" style={{ backgroundColor: colors.card, borderColor: colors.border }}>
                <View className="flex-row justify-between items-center mb-6">
-                 <Text className="text-white font-black text-base">Fuerza Estimada (1RM)</Text>
+                 <View className="flex-row items-center gap-x-1.5">
+                   <Text className="text-white font-black text-base">Fuerza Estimada (1RM)</Text>
+                   <InfoHint title="¿Qué es el 1RM?" description="1RM = Una Repetición Máxima: el peso más pesado que estimamos que podrías levantar una sola vez, calculado a partir de tus series reales (peso x repeticiones)." />
+                 </View>
                  <View className="flex-row items-center gap-x-1">
                     <Text style={{ color: getTrend(currentStats.rm1, prevStats.rm1) >= 0 ? '#10b981' : '#ef4444' }} className="text-xs font-black">
                       {getTrend(currentStats.rm1, prevStats.rm1)}%

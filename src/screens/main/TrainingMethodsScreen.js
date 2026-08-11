@@ -31,8 +31,8 @@ export default function TrainingMethodsScreen({ navigation }) {
         >
           <ChevronLeft color="white" size={24} />
         </TouchableOpacity>
-        <View>
-          <Text className="text-2xl font-black text-white">MÉTODOS DE ENTRENAMIENTO</Text>
+        <View className="flex-1">
+          <Text className="text-xl font-black text-white">MÉTODOS DE ENTRENAMIENTO</Text>
           <Text className="text-slate-500 text-[10px] tracking-widest font-bold">SISTEMAS Y FILOSOFÍAS DE PROGRAMACIÓN</Text>
         </View>
       </View>

@@ -1,26 +1,35 @@
 import React, { useState, useEffect } from 'react';
 import { View, Text, TouchableOpacity, Modal, Alert } from 'react-native';
-import { Dumbbell } from 'lucide-react-native';
+import { Dumbbell, Trash2 } from 'lucide-react-native';
 import useStore, { THEMES } from '../../store/useStore';
 import { PRIMARY_GROUPS } from '../../constants/Muscles';
 import { translateMuscleGroup } from '../../constants/Muscles';
 import PreciseInput from './PreciseInput';
 import PreciseButton from './PreciseButton';
 
-// Modal reutilizable para crear un ejercicio propio (fuera del catálogo semillado).
+// Modal reutilizable para crear O editar un ejercicio propio (fuera del catálogo semillado).
 // Usado desde los 3 selectores de ejercicio (Rutinas, Bitácora, Sesión Activa).
-export default function CreateExerciseModal({ visible, onClose, initialName = '', onCreated }) {
+// Pasar `editingExercise` (fila de la tabla exercises) para entrar en modo edición.
+export default function CreateExerciseModal({ visible, onClose, initialName = '', onCreated, editingExercise = null, onUpdated, onDeleted }) {
   const theme = useStore(state => state.theme);
   const colors = THEMES[theme] || THEMES.midnight;
   const createCustomExercise = useStore(state => state.createCustomExercise);
+  const updateCustomExercise = useStore(state => state.updateCustomExercise);
+  const deleteCustomExercise = useStore(state => state.deleteCustomExercise);
+
+  const isEditMode = !!editingExercise;
 
   const [name, setName] = useState(initialName);
   const [muscleGroup, setMuscleGroup] = useState(null);
   const [saving, setSaving] = useState(false);
+  const [deleting, setDeleting] = useState(false);
 
   useEffect(() => {
-    if (visible) setName(initialName);
-  }, [visible, initialName]);
+    if (visible) {
+      setName(isEditMode ? editingExercise.name : initialName);
+      setMuscleGroup(isEditMode ? editingExercise.muscle_group : null);
+    }
+  }, [visible, initialName, editingExercise]);
 
   const handleCreate = async () => {
     if (!name.trim()) {
@@ -34,16 +43,47 @@ export default function CreateExerciseModal({ visible, onClose, initialName = ''
 
     setSaving(true);
     try {
-      const newExercise = await createCustomExercise(name.trim(), muscleGroup);
+      if (isEditMode) {
+        await updateCustomExercise(editingExercise.id, name.trim(), muscleGroup);
+        onUpdated?.({ ...editingExercise, name: name.trim(), muscle_group: muscleGroup });
+      } else {
+        const newExercise = await createCustomExercise(name.trim(), muscleGroup);
+        onCreated?.(newExercise);
+      }
       setName('');
       setMuscleGroup(null);
-      onCreated?.(newExercise);
       onClose();
     } catch (err) {
-      Alert.alert("Error", "No se pudo crear el ejercicio.");
+      Alert.alert("Error", isEditMode ? "No se pudo guardar los cambios." : "No se pudo crear el ejercicio.");
     } finally {
       setSaving(false);
     }
+  };
+
+  const handleDelete = () => {
+    Alert.alert(
+      "Eliminar Ejercicio",
+      `¿Deseas eliminar "${editingExercise?.name}" de tu catálogo? Esta acción no se puede deshacer.`,
+      [
+        { text: "Cancelar", style: "cancel" },
+        {
+          text: "Sí, Eliminar",
+          style: "destructive",
+          onPress: async () => {
+            setDeleting(true);
+            try {
+              await deleteCustomExercise(editingExercise.id);
+              onDeleted?.(editingExercise.id);
+              onClose();
+            } catch (err) {
+              Alert.alert("No se pudo eliminar", err.message || "Ocurrió un error al eliminar el ejercicio.");
+            } finally {
+              setDeleting(false);
+            }
+          }
+        }
+      ]
+    );
   };
 
   return (
@@ -54,7 +94,7 @@ export default function CreateExerciseModal({ visible, onClose, initialName = ''
             <View className="w-9 h-9 rounded-xl items-center justify-center" style={{ backgroundColor: `${colors.accent}1A` }}>
               <Dumbbell size={18} color={colors.accent} />
             </View>
-            <Text className="text-white font-black text-lg">Crear Ejercicio</Text>
+            <Text className="text-white font-black text-lg">{isEditMode ? 'Editar Ejercicio' : 'Crear Ejercicio'}</Text>
           </View>
 
           <Text className="text-slate-500 text-[10px] uppercase font-bold tracking-widest mb-2">Nombre</Text>
@@ -87,6 +127,19 @@ export default function CreateExerciseModal({ visible, onClose, initialName = ''
             ))}
           </View>
 
+          {isEditMode && (
+            <TouchableOpacity
+              onPress={handleDelete}
+              disabled={deleting || saving}
+              className="flex-row items-center justify-center gap-x-2 py-3 rounded-2xl mb-3 border border-red-900/30 bg-red-950/20"
+            >
+              <Trash2 size={14} color="#ef4444" />
+              <Text className="text-red-500 font-bold text-xs uppercase tracking-wider">
+                {deleting ? 'Eliminando...' : 'Eliminar Ejercicio'}
+              </Text>
+            </TouchableOpacity>
+          )}
+
           <View className="flex-row gap-x-3">
             <TouchableOpacity
               onPress={onClose}
@@ -95,8 +148,10 @@ export default function CreateExerciseModal({ visible, onClose, initialName = ''
             >
               <Text className="text-slate-400 font-bold text-xs uppercase tracking-wider">Cancelar</Text>
             </TouchableOpacity>
-            <PreciseButton onPress={handleCreate} disabled={saving} loading={saving} className="flex-1">
-              <Text style={{ color: colors.accentText }} className="font-bold text-xs uppercase tracking-wider">Crear</Text>
+            <PreciseButton onPress={handleCreate} disabled={saving || deleting} loading={saving} className="flex-1">
+              <Text style={{ color: colors.accentText }} className="font-bold text-xs uppercase tracking-wider">
+                {isEditMode ? 'Guardar' : 'Crear'}
+              </Text>
             </PreciseButton>
           </View>
         </View>

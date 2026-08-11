@@ -34,6 +34,7 @@ export default function WorkoutLoggerScreen({ navigation, route }) {
   const [exercises, setExercises] = useState([]);
   const [showSelector, setShowSelector] = useState(false);
   const [showCreateExercise, setShowCreateExercise] = useState(false);
+  const [editingExercise, setEditingExercise] = useState(null);
   const [showAddActions, setShowAddActions] = useState(false);
   const [showHelpModal, setShowHelpModal] = useState(null);
   const [isSaving, setIsSaving] = useState(false);
@@ -54,6 +55,7 @@ export default function WorkoutLoggerScreen({ navigation, route }) {
           name: re.exercises?.name || re.name || '',
           muscle_group: normalizeMuscleGroup(re.exercises?.muscle_group || re.muscle_group),
           supersetId: re.superset_id || null,
+          notes: re.notes || null,
           sets: buildPrefilledSets(lastSets, setCount, re.default_reps || 10)
         };
       }) || [];
@@ -258,6 +260,14 @@ export default function WorkoutLoggerScreen({ navigation, route }) {
                     <View className="flex-row items-center gap-x-1.5 mb-3 self-start px-2 py-1 rounded-lg bg-purple-500/10">
                       <LinkIcon size={10} color="#a855f7" />
                       <Text className="text-purple-400 text-[9px] font-black uppercase tracking-wider">Superserie</Text>
+                    </View>
+                  )}
+                  {!!ex.notes && (
+                    <View className="flex-row items-start gap-x-1.5 mb-3 p-2 rounded-lg" style={{ backgroundColor: colors.accent + '0D' }}>
+                      <Info size={12} color={colors.accent} style={{ marginTop: 1 }} />
+                      <Text style={{ color: colors.accent }} className="text-[11px] leading-relaxed flex-1">
+                        {ex.notes}
+                      </Text>
                     </View>
                   )}
                   <View className="flex-row justify-between items-start mb-4">
@@ -574,9 +584,12 @@ export default function WorkoutLoggerScreen({ navigation, route }) {
                      <View className="flex-row justify-between items-start">
                        <View className="px-2 py-0.5 rounded-md" style={{ backgroundColor: colors.accent }}><Text style={{ color: colors.accentText }} className="text-[8px] font-black uppercase">{ex.muscle_group}</Text></View>
                        {!!ex.user_id && (
-                         <View className="px-2 py-0.5 rounded-md bg-purple-500/80">
-                           <Text className="text-white text-[8px] font-black uppercase">Tuyo</Text>
-                         </View>
+                         <TouchableOpacity
+                           onPress={() => { setEditingExercise(ex); setShowCreateExercise(true); }}
+                           className="px-2 py-0.5 rounded-md bg-purple-500/80"
+                         >
+                           <Text className="text-white text-[8px] font-black uppercase">Tuyo · Editar</Text>
+                         </TouchableOpacity>
                        )}
                      </View>
                      <Text className="text-white font-bold text-xs" numberOfLines={2}>{ex.name}</Text>
@@ -590,8 +603,9 @@ export default function WorkoutLoggerScreen({ navigation, route }) {
 
       <CreateExerciseModal
         visible={showCreateExercise}
-        onClose={() => setShowCreateExercise(false)}
+        onClose={() => { setShowCreateExercise(false); setEditingExercise(null); }}
         initialName={searchTerm}
+        editingExercise={editingExercise}
         onCreated={(newEx) => {
           handleSelectExercise(newEx);
           setSearchTerm('');

@@ -37,6 +37,7 @@ export default function ActiveWorkoutScreen({ navigation }) {
   const [isSaving, setIsSaving] = useState(false);
   const [showSelector, setShowSelector] = useState(false);
   const [showCreateExercise, setShowCreateExercise] = useState(false);
+  const [editingExercise, setEditingExercise] = useState(null);
   const [currentExerciseIdx, setCurrentExerciseIdx] = useState(0);
   const [liveAlerts, setLiveAlerts] = useState({});
   const [showStatusHelp, setShowStatusHelp] = useState(false);
@@ -374,6 +375,14 @@ export default function ActiveWorkoutScreen({ navigation }) {
                     </Text>
                   </View>
                 )}
+                {!!currentEx.notes && (
+                  <View className="flex-row items-start gap-x-1.5 mt-2 p-2 rounded-lg" style={{ backgroundColor: colors.accent + '0D' }}>
+                    <Info size={12} color={colors.accent} style={{ marginTop: 1 }} />
+                    <Text style={{ color: colors.accent }} className="text-[11px] leading-relaxed flex-1">
+                      {currentEx.notes}
+                    </Text>
+                  </View>
+                )}
               </View>
               {globalTimerSeconds !== null && (
                 <View className="bg-purple-600 px-4 py-2 rounded-2xl flex-row items-center gap-x-2 shadow-lg shadow-purple-600/30">
@@ -662,9 +671,12 @@ export default function ActiveWorkoutScreen({ navigation }) {
                          <Text style={{ color: colors.accentText }} className="text-[8px] font-black uppercase tracking-tighter">{translateMuscleGroup(ex.muscle_group)}</Text>
                        </View>
                        {!!ex.user_id && (
-                         <View className="px-2 py-0.5 rounded-md bg-purple-500/80">
-                           <Text className="text-white text-[8px] font-black uppercase">Tuyo</Text>
-                         </View>
+                         <TouchableOpacity
+                           onPress={() => { setEditingExercise(ex); setShowCreateExercise(true); }}
+                           className="px-2 py-0.5 rounded-md bg-purple-500/80"
+                         >
+                           <Text className="text-white text-[8px] font-black uppercase">Tuyo · Editar</Text>
+                         </TouchableOpacity>
                        )}
                      </View>
                     <View>
@@ -684,8 +696,9 @@ export default function ActiveWorkoutScreen({ navigation }) {
 
       <CreateExerciseModal
         visible={showCreateExercise}
-        onClose={() => setShowCreateExercise(false)}
+        onClose={() => { setShowCreateExercise(false); setEditingExercise(null); }}
         initialName={searchTerm}
+        editingExercise={editingExercise}
         onCreated={(newEx) => {
           handleSelectExercise(newEx);
           setSearchTerm('');

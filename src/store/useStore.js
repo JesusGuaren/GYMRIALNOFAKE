@@ -153,6 +153,27 @@ const useStore = create(
     return data;
   },
 
+  updateCustomExercise: async (exerciseId, name, muscleGroup) => {
+    const { error } = await supabase
+      .from('exercises')
+      .update({ name, muscle_group: muscleGroup })
+      .eq('id', exerciseId);
+
+    if (error) throw error;
+    await get().fetchExercises();
+  },
+
+  deleteCustomExercise: async (exerciseId) => {
+    const { error } = await supabase.from('exercises').delete().eq('id', exerciseId);
+    if (error) {
+      if (error.code === '23503') {
+        throw new Error('Este ejercicio ya se usa en una rutina o entrenamiento guardado, no se puede eliminar.');
+      }
+      throw error;
+    }
+    await get().fetchExercises();
+  },
+
   fetchWorkouts: async () => {
     const user = get().user;
     if (!user) return;
@@ -294,7 +315,8 @@ const useStore = create(
         default_sets: ex.default_sets || 3,
         default_reps: ex.default_reps || 10,
         order_index: exIdx,
-        superset_id: ex.supersetId || null
+        superset_id: ex.supersetId || null,
+        notes: ex.notes || null
       }));
 
       const { error: reError } = await supabase.from('routine_exercises').insert(routineExercises);
@@ -362,7 +384,8 @@ const useStore = create(
       default_sets: ex.sets?.length || 3,
       default_reps: ex.sets?.[0]?.reps || 10,
       order_index: index,
-      superset_id: ex.supersetId || null
+      superset_id: ex.supersetId || null,
+      notes: ex.notes || null
     }));
     
     const { error: exercisesError } = await supabase.from('routine_exercises').insert(routineExercises);
@@ -395,7 +418,8 @@ const useStore = create(
       default_sets: ex.default_sets || 3,
       default_reps: ex.default_reps || 10,
       order_index: index,
-      superset_id: ex.supersetId || null
+      superset_id: ex.supersetId || null,
+      notes: ex.notes || null
     }));
 
     const { error: exercisesError } = await supabase.from('routine_exercises').insert(routineExercises);

@@ -84,7 +84,8 @@ export default function AIRoutineScreen({ navigation }) {
           name: ex.name,
           muscle_group: ex.muscle_group,
           default_sets: ex.sets_count,
-          default_reps: parseInt(ex.reps_range) || 10
+          default_reps: parseInt(ex.reps_range) || 10,
+          notes: ex.notes || null
         }))
       }));
 
@@ -397,7 +398,7 @@ export default function AIRoutineScreen({ navigation }) {
                         </View>
                         <View className="items-end">
                           <Text className="text-purple-400 font-black text-xs">{ex.sets_count} series</Text>
-                          <Text className="text-slate-500 text-[10px] font-bold mt-0.5">{ex.reps_range} reps</Text>
+                          <Text className="text-slate-500 text-[10px] font-bold mt-0.5">{ex.reps_range} repeticiones</Text>
                         </View>
                       </View>
                     ))}

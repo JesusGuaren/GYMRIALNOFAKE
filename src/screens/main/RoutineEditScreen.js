@@ -29,6 +29,7 @@ export default function RoutineEditScreen({ navigation, route }) {
   const [exercises, setExercises] = useState([]);
   const [showSelector, setShowSelector] = useState(false);
   const [showCreateExercise, setShowCreateExercise] = useState(false);
+  const [editingExercise, setEditingExercise] = useState(null);
   const [searchTerm, setSearchTerm] = useState('');
   const [hasChanges, setHasChanges] = useState(false);
 
@@ -46,7 +47,8 @@ export default function RoutineEditScreen({ navigation, route }) {
           muscle_group: re.exercises?.muscle_group || 'Arms',
           default_sets: re.default_sets || 3,
           default_reps: re.default_reps || 10,
-          supersetId: re.superset_id || null
+          supersetId: re.superset_id || null,
+          notes: re.notes || ''
         })) || [];
         setExercises(loadedExercises);
       }
@@ -67,7 +69,8 @@ export default function RoutineEditScreen({ navigation, route }) {
       muscle_group: ex.muscle_group,
       default_sets: 3,
       default_reps: 10,
-      supersetId: null
+      supersetId: null,
+      notes: ''
     }]);
     setHasChanges(true);
     setShowSelector(false);
@@ -98,6 +101,13 @@ export default function RoutineEditScreen({ navigation, route }) {
   const updateExerciseParam = (idx, field, value) => {
     const updated = [...exercises];
     updated[idx][field] = parseInt(value) || 0;
+    setExercises(updated);
+    setHasChanges(true);
+  };
+
+  const updateExerciseNotes = (idx, value) => {
+    const updated = [...exercises];
+    updated[idx] = { ...updated[idx], notes: value };
     setExercises(updated);
     setHasChanges(true);
   };
@@ -368,6 +378,19 @@ export default function RoutineEditScreen({ navigation, route }) {
                       />
                     </View>
                   </View>
+
+                  <View className="mt-3">
+                    <Text className="text-slate-500 text-[9px] uppercase font-bold tracking-wider mb-1">Nota (opcional)</Text>
+                    <TextInput
+                      value={ex.notes}
+                      onChangeText={(val) => updateExerciseNotes(idx, val)}
+                      placeholder="Ej. Cadencia lenta, técnica, o protocolo de un método"
+                      placeholderTextColor="#475569"
+                      multiline
+                      className="rounded-xl px-3 py-2 text-white text-xs"
+                      style={{ backgroundColor: colors.bg, minHeight: 40 }}
+                    />
+                  </View>
                 </View>
 
                 {(isPairedWithNext || canLinkNext) && (
@@ -461,9 +484,12 @@ export default function RoutineEditScreen({ navigation, route }) {
                         <Text style={{ color: colors.accentText }} className="text-[8px] font-black uppercase">{ex.muscle_group}</Text>
                       </View>
                       {!!ex.user_id && (
-                        <View className="px-2 py-0.5 rounded-md bg-purple-500/80">
-                          <Text className="text-white text-[8px] font-black uppercase">Tuyo</Text>
-                        </View>
+                        <TouchableOpacity
+                          onPress={() => { setEditingExercise(ex); setShowCreateExercise(true); }}
+                          className="px-2 py-0.5 rounded-md bg-purple-500/80"
+                        >
+                          <Text className="text-white text-[8px] font-black uppercase">Tuyo · Editar</Text>
+                        </TouchableOpacity>
                       )}
                     </View>
                     <Text className="text-white font-bold text-xs" numberOfLines={2}>{ex.name}</Text>
@@ -477,8 +503,9 @@ export default function RoutineEditScreen({ navigation, route }) {
 
       <CreateExerciseModal
         visible={showCreateExercise}
-        onClose={() => setShowCreateExercise(false)}
+        onClose={() => { setShowCreateExercise(false); setEditingExercise(null); }}
         initialName={searchTerm}
+        editingExercise={editingExercise}
         onCreated={(newEx) => {
           handleSelectExercise(newEx);
           setSearchTerm('');
